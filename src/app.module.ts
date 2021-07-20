@@ -3,6 +3,9 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as Joi from 'joi';
 
+import { User } from '@users/entities/user.entity';
+import { UsersModule } from '@users/users.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -25,9 +28,10 @@ import * as Joi from 'joi';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [],
+      entities: [User],
       synchronize: true,
     }),
+    UsersModule,
   ],
 })
 export class AppModule {}
