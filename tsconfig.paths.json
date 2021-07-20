@@ -2,6 +2,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
+      "@common/*": ["src/common/*"],
       "@users/*": ["src/users/*"],
       "@/*": ["src/*"]
     }

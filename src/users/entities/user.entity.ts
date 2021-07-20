@@ -1,20 +1,10 @@
-import { IsDate, IsEmail, IsNumber, IsString } from 'class-validator';
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { IsEmail, IsString } from 'class-validator';
+import { Column, Entity } from 'typeorm';
+
+import { Core } from '@common/entities/core.entity';
 
 @Entity()
-export class User {
-  @PrimaryGeneratedColumn()
-  @IsNumber()
-  id: number;
-
-  @CreateDateColumn()
-  @IsDate()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  @IsDate()
-  updatedAt: Date;
-
+export class User extends Core {
   @Column({ unique: true })
   @IsEmail()
   email: string;
