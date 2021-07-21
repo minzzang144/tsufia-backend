@@ -1,5 +1,7 @@
+import * as bcrypt from 'bcrypt';
+import { Exclude } from 'class-transformer';
 import { IsEmail, IsString } from 'class-validator';
-import { Column, Entity } from 'typeorm';
+import { BeforeInsert, Column, Entity } from 'typeorm';
 
 import { Core } from '@common/entities/core.entity';
 
@@ -18,6 +20,12 @@ export class User extends Core {
   lastName: string;
 
   @Column({ select: false })
+  @Exclude()
   @IsString()
   password: string;
+
+  @BeforeInsert()
+  async hashPassword() {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
 }
