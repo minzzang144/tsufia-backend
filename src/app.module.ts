@@ -32,8 +32,8 @@ import { UsersModule } from '@users/users.module';
       entities: [User],
       synchronize: true,
     }),
-    UsersModule,
     CommonModule,
+    UsersModule,
   ],
 })
 export class AppModule {}
