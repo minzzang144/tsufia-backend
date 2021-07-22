@@ -13,7 +13,7 @@ export class AuthService {
       const { email, password } = validateAuthInputDto;
       const { user } = await this.usersService.findOneUser({ email });
       if (!user) return { ok: false, error: '이메일 계정이 존재하지 않습니다.' };
-      if (user && user.password !== password) {
+      if (user && (await user.validatePassword(password))) {
         return { ok: false, error: '패스워드가 일치하지 않습니다.' };
       }
       return { ok: true, data: user };
