@@ -7,5 +7,5 @@ export class ValidateAuthInputDto extends PickType(User, ['email', 'password']) 
 
 export class ValidateAuthOutputDto extends CoreOutput {
   @IsOptional()
-  user?: User;
+  data?: User;
 }

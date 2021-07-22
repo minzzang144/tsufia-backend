@@ -16,7 +16,7 @@ export class AuthService {
       if (user && user.password !== password) {
         return { ok: false, error: '패스워드가 일치하지 않습니다.' };
       }
-      return { ok: true, user };
+      return { ok: true, data: user };
     } catch (error) {
       return { ok: false, error: '로그인 인증에 실패하였습니다.' };
     }
