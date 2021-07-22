@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 
 import { ValidateAuthInputDto, ValidateAuthOutputDto } from '@auth/dtos/validate-auth.dto';
 import { UsersService } from '@users/users.service';
+import { LoginAuthInputDto, LoginAuthOutputDto } from '@auth/dtos/login-auth.dto';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService, private readonly jwtService: JwtService) {}
 
-  /* Validate User */
+  /* Validate User Service */
   async validateUser(validateAuthInputDto: ValidateAuthInputDto): Promise<ValidateAuthOutputDto> {
     try {
       const { email, password } = validateAuthInputDto;
@@ -20,5 +22,15 @@ export class AuthService {
     } catch (error) {
       return { ok: false, error: '로그인 인증에 실패하였습니다.' };
     }
+  }
+
+  /* Login Service */
+  async login(loginAuthInputDto: LoginAuthInputDto): Promise<LoginAuthOutputDto> {
+    const { data: user } = loginAuthInputDto;
+    const payload = { userId: user.id, userEmail: user.email };
+    return {
+      ...loginAuthInputDto,
+      access_token: this.jwtService.sign(payload),
+    };
   }
 }
