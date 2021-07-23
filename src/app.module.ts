@@ -21,6 +21,7 @@ import { UsersModule } from '@users/users.module';
         DB_USERNAME: Joi.string(),
         DB_PASSWORD: Joi.string(),
         DB_NAME: Joi.string(),
+        JWT_SECRET_KEY: Joi.string(),
       }),
     }),
     TypeOrmModule.forRoot({
