@@ -26,10 +26,11 @@ export class AuthService {
 
   /* Login Service */
   async login(loginAuthInputDto: LoginAuthInputDto): Promise<LoginAuthOutputDto> {
-    const { data: user } = loginAuthInputDto;
-    const payload = { userId: user.id, userEmail: user.email };
+    if (loginAuthInputDto == null) return { ok: false, error: '토큰을 발급받을 수 없습니다.' };
+    const { id, email, firstName, lastName } = loginAuthInputDto;
+    const payload = { id, email, firstName, lastName };
     return {
-      ...loginAuthInputDto,
+      ok: true,
       access_token: this.jwtService.sign(payload),
     };
   }

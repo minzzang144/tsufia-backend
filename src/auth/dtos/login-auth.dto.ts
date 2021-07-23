@@ -1,9 +1,12 @@
-import { ValidateAuthOutputDto } from '@auth/dtos/validate-auth.dto';
-import { IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
-export class LoginAuthInputDto extends ValidateAuthOutputDto {}
+import { CoreOutput } from '@common/dtos/core.dto';
+import { User } from '@users/entities/user.entity';
 
-export class LoginAuthOutputDto extends ValidateAuthOutputDto {
+export class LoginAuthInputDto extends User {}
+
+export class LoginAuthOutputDto extends CoreOutput {
+  @IsOptional()
   @IsString()
-  access_token: string;
+  access_token?: string;
 }

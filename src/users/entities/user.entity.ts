@@ -33,7 +33,7 @@ export class User extends Core {
     return bcrypt.compare(password, this.password);
   }
 
-  toJSON() {
+  toJSON(): Record<string, any> {
     return classToPlain(this);
   }
 }
