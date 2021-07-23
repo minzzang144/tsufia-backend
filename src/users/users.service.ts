@@ -30,11 +30,18 @@ export class UsersService {
     }
   }
 
-  /* Find One User */
-  async findOneUser(getUserInputDto: GetUserInputDto): Promise<GetUserOutputDto> {
+  /* Get User */
+  async getUser(getUserInputDto: GetUserInputDto): Promise<GetUserOutputDto> {
     try {
-      const { email } = getUserInputDto;
-      const user = await this.userRepository.findOne({ email });
+      const { id, email } = getUserInputDto;
+      let user: User;
+      if (!id && !email) return { ok: false, error: '로그인이 필요합니다.' };
+      if (id) {
+        user = await this.userRepository.findOne({ id });
+      }
+      if (email) {
+        user = await this.userRepository.findOne({ email });
+      }
       if (!user) return { ok: false, error: '해당 유저를 찾을 수 없습니다.' };
       return { ok: true, user };
     } catch (error) {

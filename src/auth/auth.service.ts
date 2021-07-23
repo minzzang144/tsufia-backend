@@ -13,7 +13,7 @@ export class AuthService {
   async validateUser(validateAuthInputDto: ValidateAuthInputDto): Promise<ValidateAuthOutputDto> {
     try {
       const { email, password } = validateAuthInputDto;
-      const { user } = await this.usersService.findOneUser({ email });
+      const { user } = await this.usersService.getUser({ email });
       if (!user) return { ok: false, error: '이메일 계정이 존재하지 않습니다.' };
       if (user && (await user.validatePassword(password))) {
         return { ok: false, error: '패스워드가 일치하지 않습니다.' };
@@ -26,7 +26,7 @@ export class AuthService {
 
   /* Login Service */
   async login(loginAuthInputDto: LoginAuthInputDto): Promise<LoginAuthOutputDto> {
-    if (loginAuthInputDto == null) return { ok: false, error: '토큰을 발급받을 수 없습니다.' };
+    if (loginAuthInputDto == null) return { ok: false, error: '토큰을 발급 받을 수 없습니다.' };
     const { id, email, firstName, lastName } = loginAuthInputDto;
     const payload = { id, email, firstName, lastName };
     return {
