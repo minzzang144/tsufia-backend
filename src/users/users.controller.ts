@@ -1,10 +1,12 @@
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 
 import { CreateUserInputDto, CreateUserOutputDto } from '@users/dtos/create-user.dto';
 import { UsersService } from '@users/users.service';
 import { GetUserOutputDto } from '@users/dtos/get-user.dto';
-import { GetWillPatchUserOutput, RequestWithUserData } from '@users/dtos/get-will-patch-user.dto';
+import { GetWillPatchUserOutput } from '@users/dtos/get-will-patch-user.dto';
+import { PatchUserInputDto, PatchUserOutputDto } from '@users/dtos/patch-user.dto';
+import { RequestWithUserData } from '@users/users.interface';
 
 @Controller('users')
 export class UsersController {
@@ -27,9 +29,20 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Get(':id/profile-update')
   async getWillPatchUser(
-    @Req() reqWithUser: RequestWithUserData,
+    @Req() requsetWithUserData: RequestWithUserData,
     @Param('id') userId: string,
   ): Promise<GetWillPatchUserOutput> {
-    return this.usersService.getWillPatchUser(reqWithUser, userId);
+    return this.usersService.getWillPatchUser(requsetWithUserData, userId);
+  }
+
+  /* Patch User Controller */
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/profile-update')
+  async patchUser(
+    @Req() requsetWithUserData: RequestWithUserData,
+    @Param('id') userId: string,
+    @Body() patchUserInputDto: PatchUserInputDto,
+  ): Promise<PatchUserOutputDto> {
+    return this.usersService.patchUser(requsetWithUserData, userId, patchUserInputDto);
   }
 }
