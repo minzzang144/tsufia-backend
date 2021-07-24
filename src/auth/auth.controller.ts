@@ -11,6 +11,7 @@ export type RequestWithUser = Request & { user: ValidateAuthOutputDto };
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
   /* Post Login Controller */
   @UseGuards(LocalAuthGuard)
   @Post('login')

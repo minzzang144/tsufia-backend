@@ -13,7 +13,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   /* Create User Controller */
-  @Post()
+  @Post('sign-up')
   async createUser(@Body() createUserInputDto: CreateUserInputDto): Promise<CreateUserOutputDto> {
     return this.usersService.createUser(createUserInputDto);
   }
