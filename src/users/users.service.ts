@@ -5,7 +5,9 @@ import { Repository } from 'typeorm';
 import { User } from '@users/entities/user.entity';
 import { CreateUserInputDto, CreateUserOutputDto } from '@users/dtos/create-user.dto';
 import { GetUserInputDto, GetUserOutputDto } from '@users/dtos/get-user.dto';
-import { GetWillPatchUserOutput, RequestWithUserData } from '@users/dtos/get-will-patch-user.dto';
+import { GetWillPatchUserOutput } from '@users/dtos/get-will-patch-user.dto';
+import { PatchUserInputDto, PatchUserOutputDto } from '@users/dtos/patch-user.dto';
+import { RequestWithUserData } from '@users/users.interface';
 
 @Injectable()
 export class UsersService {
@@ -51,12 +53,38 @@ export class UsersService {
   }
 
   /* Get Will Patch User Service */
-  async getWillPatchUser(req: RequestWithUserData, userId: string): Promise<GetWillPatchUserOutput> {
+  async getWillPatchUser(requsetWithUserData: RequestWithUserData, userId: string): Promise<GetWillPatchUserOutput> {
     try {
-      if (req.user.id !== +userId) return { ok: false, error: '접근 권한이 없습니다.' };
-      return { ok: true, user: req.user };
+      const { user } = requsetWithUserData;
+      if (user.id !== +userId) return { ok: false, error: '접근 권한을 가지고 있지 않습니다.' };
+      return { ok: true, user: user };
     } catch (error) {
-      return { ok: false, error: '접근 권한이 없습니다.' };
+      return { ok: false, error: '접근 권한을 가지고 있지 않습니다.' };
+    }
+  }
+
+  /* Patch User Service */
+  async patchUser(
+    requsetWithUserData: RequestWithUserData,
+    userId: string,
+    patchUserInputDto: PatchUserInputDto,
+  ): Promise<PatchUserOutputDto> {
+    try {
+      const { user } = requsetWithUserData;
+      const { firstName, lastName, password, checkPassword } = patchUserInputDto;
+      if (user.id !== +userId) return { ok: false, error: '접근 권한을 가지고 있지 않습니다.' };
+      const patchUser = await this.userRepository.findOne({ email: user.email });
+      if (firstName) patchUser.firstName = firstName;
+      if (lastName) patchUser.lastName = lastName;
+      if (password && !checkPassword) return { ok: false, error: '패스워드 확인이 필요합니다.' };
+      if (password && checkPassword && password !== checkPassword)
+        return { ok: false, error: '패스워드가 일치하지 않습니다.' };
+      if (password && checkPassword && password === checkPassword) patchUser.password = password;
+      await this.userRepository.save(patchUser);
+      return { ok: true };
+    } catch (error) {
+      console.log(error);
+      return { ok: false, error: '유저 업데이트를 실패 하였습니다.' };
     }
   }
 }

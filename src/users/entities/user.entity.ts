@@ -1,7 +1,7 @@
 import * as bcrypt from 'bcrypt';
 import { classToPlain, Exclude } from 'class-transformer';
 import { IsEmail, IsString } from 'class-validator';
-import { BeforeInsert, Column, Entity } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm';
 
 import { Core } from '@common/entities/core.entity';
 
@@ -25,6 +25,7 @@ export class User extends Core {
   password: string;
 
   @BeforeInsert()
+  @BeforeUpdate()
   async hashPassword() {
     this.password = await bcrypt.hash(this.password, 10);
   }
