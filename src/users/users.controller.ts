@@ -1,12 +1,10 @@
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
-import { Request } from 'express';
+import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
 
 import { CreateUserInputDto, CreateUserOutputDto } from '@users/dtos/create-user.dto';
-import { User } from '@users/entities/user.entity';
 import { UsersService } from '@users/users.service';
-
-export type RequestWithUserData = Request & { user: User };
+import { GetUserOutputDto } from '@users/dtos/get-user.dto';
+import { GetWillPatchUserOutput, RequestWithUserData } from '@users/dtos/get-will-patch-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -21,7 +19,17 @@ export class UsersController {
   /* Get User Controller  */
   @UseGuards(JwtAuthGuard)
   @Get(':id/profile')
-  getUser(@Param('id') userId: string) {
+  async getUser(@Param('id') userId: string): Promise<GetUserOutputDto> {
     return this.usersService.getUser({ id: +userId });
+  }
+
+  /* Get Will Patch User Controller */
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/profile-update')
+  async getWillPatchUser(
+    @Req() reqWithUser: RequestWithUserData,
+    @Param('id') userId: string,
+  ): Promise<GetWillPatchUserOutput> {
+    return this.usersService.getWillPatchUser(reqWithUser, userId);
   }
 }

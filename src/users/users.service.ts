@@ -5,12 +5,13 @@ import { Repository } from 'typeorm';
 import { User } from '@users/entities/user.entity';
 import { CreateUserInputDto, CreateUserOutputDto } from '@users/dtos/create-user.dto';
 import { GetUserInputDto, GetUserOutputDto } from '@users/dtos/get-user.dto';
+import { GetWillPatchUserOutput, RequestWithUserData } from '@users/dtos/get-will-patch-user.dto';
 
 @Injectable()
 export class UsersService {
   constructor(@InjectRepository(User) private readonly userRepository: Repository<User>) {}
 
-  /* Create User */
+  /* Create User Service */
   async createUser(createUserInputDto: CreateUserInputDto): Promise<CreateUserOutputDto> {
     try {
       const { email, firstName, lastName, password, checkPassword } = createUserInputDto;
@@ -30,7 +31,7 @@ export class UsersService {
     }
   }
 
-  /* Get User */
+  /* Get User Service */
   async getUser(getUserInputDto: GetUserInputDto): Promise<GetUserOutputDto> {
     try {
       const { id, email } = getUserInputDto;
@@ -46,6 +47,16 @@ export class UsersService {
       return { ok: true, user };
     } catch (error) {
       return { ok: false, error: '유저 탐색을 실패했습니다.' };
+    }
+  }
+
+  /* Get Will Patch User Service */
+  async getWillPatchUser(req: RequestWithUserData, userId: string): Promise<GetWillPatchUserOutput> {
+    try {
+      if (req.user.id !== +userId) return { ok: false, error: '접근 권한이 없습니다.' };
+      return { ok: true, user: req.user };
+    } catch (error) {
+      return { ok: false, error: '접근 권한이 없습니다.' };
     }
   }
 }
