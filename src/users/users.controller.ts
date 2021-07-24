@@ -7,6 +7,7 @@ import { GetUserOutputDto } from '@users/dtos/get-user.dto';
 import { GetWillPatchUserOutput } from '@users/dtos/get-will-patch-user.dto';
 import { PatchUserInputDto, PatchUserOutputDto } from '@users/dtos/patch-user.dto';
 import { RequestWithUserData } from '@users/users.interface';
+import { PostUserPasswordInputDto, PostUserPasswordOutputDto } from '@users/dtos/post-user-password.dto';
 
 @Controller('users')
 export class UsersController {
@@ -16,6 +17,17 @@ export class UsersController {
   @Post('sign-up')
   async createUser(@Body() createUserInputDto: CreateUserInputDto): Promise<CreateUserOutputDto> {
     return this.usersService.createUser(createUserInputDto);
+  }
+
+  /* Post User Password Controller */
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/validate-password')
+  async postUserPassword(
+    @Req() requsetWithUserData: RequestWithUserData,
+    @Param('id') userId: string,
+    @Body() postUserPasswordInputDto: PostUserPasswordInputDto,
+  ): Promise<PostUserPasswordOutputDto> {
+    return this.usersService.postUserPassword(requsetWithUserData, userId, postUserPasswordInputDto);
   }
 
   /* Get User Controller  */
