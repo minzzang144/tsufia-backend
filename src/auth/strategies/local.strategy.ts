@@ -14,7 +14,10 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
 
   async validate(email: string, password: string): Promise<ValidateAuthOutputDto> {
     try {
-      let { data: user } = await this.authService.validateUser({ email, password });
+      const result = await this.authService.validateUser({ email, password });
+      const { ok, error } = result;
+      let { data: user } = result;
+      if (ok === false) return { ok: false, error };
       if (!user) {
         return { ok: false, error: '로그인 인증에 실패하였습니다.' };
       }
