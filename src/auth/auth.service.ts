@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { Response } from 'express';
 
 import { ValidateAuthInputDto, ValidateAuthOutputDto } from '@auth/dtos/validate-auth.dto';
 import { UsersService } from '@users/users.service';
 import { LoginAuthInputDto, LoginAuthOutputDto } from '@auth/dtos/login-auth.dto';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -30,18 +31,31 @@ export class AuthService {
   }
 
   /* Login Service */
-  async login(loginAuthInputDto: LoginAuthInputDto): Promise<LoginAuthOutputDto> {
-    const { ok, error, data } = loginAuthInputDto;
-    if (ok === false) return { ok: false, error };
-    if (data == null) return { ok: false, error: '토큰을 발급 받을 수 없습니다.' };
-    const { id } = data;
-    const payload = { id };
-    return {
-      ok: true,
-      access_token: this.jwtService.sign(payload, {
-        secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET_KEY'),
-        expiresIn: this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
-      }),
-    };
+  async login(res: Response, loginAuthInputDto: LoginAuthInputDto): Promise<LoginAuthOutputDto> {
+    try {
+      const { ok, error, data } = loginAuthInputDto;
+      if (ok === false) return { ok: false, error };
+      if (data == null) return { ok: false, error: '토큰을 발급 받을 수 없습니다.' };
+      const { id } = data;
+      const payload = { id };
+      const refreshToken = this.jwtService.sign(payload, {
+        secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET_KEY'),
+        expiresIn: +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
+      });
+      res.cookie('refreshToken', refreshToken, {
+        expires: new Date(Date.now() + +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')),
+        httpOnly: true,
+      });
+      return {
+        ok: true,
+        accessToken: this.jwtService.sign(payload, {
+          secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET_KEY'),
+          expiresIn: +this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
+        }),
+      };
+    } catch (error) {
+      console.log(error);
+      return { ok: false, error: '로그인 인증에 실패하였습니다.' };
+    }
   }
 }

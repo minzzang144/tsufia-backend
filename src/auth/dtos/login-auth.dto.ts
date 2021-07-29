@@ -12,5 +12,5 @@ export class LoginAuthInputDto extends CoreOutput {
 export class LoginAuthOutputDto extends CoreOutput {
   @IsOptional()
   @IsString()
-  access_token?: string;
+  accessToken?: string;
 }
