@@ -1,3 +1,3 @@
-import { User } from '@users/entities/user.entity';
+type UserWithId = { id: number };
 
-export type RequestWithUserData = Request & { user: User };
+export type RequestWithUserData = Request & { user: UserWithId };

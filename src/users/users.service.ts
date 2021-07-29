@@ -89,7 +89,8 @@ export class UsersService {
 
       // 유저 인증
       if (user.id !== +userId) return { ok: false, error: '접근 권한을 가지고 있지 않습니다.' };
-      return { ok: true, user: user };
+      const willPatchUser = await this.userRepository.findOne({ id: user.id });
+      return { ok: true, user: willPatchUser };
     } catch (error) {
       return { ok: false, error: '접근 권한을 가지고 있지 않습니다.' };
     }
@@ -109,7 +110,7 @@ export class UsersService {
       if (user.id !== +userId) return { ok: false, error: '접근 권한을 가지고 있지 않습니다.' };
 
       // 유저 업데이트
-      const patchUser = await this.userRepository.findOne({ email: user.email });
+      const patchUser = await this.userRepository.findOne({ id: user.id });
       if (firstName) patchUser.firstName = firstName;
       if (lastName) patchUser.lastName = lastName;
       if (password && !checkPassword) return { ok: false, error: '패스워드 확인이 필요합니다.' };

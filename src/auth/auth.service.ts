@@ -29,8 +29,8 @@ export class AuthService {
     const { ok, error, data } = loginAuthInputDto;
     if (ok === false) return { ok: false, error };
     if (data == null) return { ok: false, error: '토큰을 발급 받을 수 없습니다.' };
-    const { id, email, firstName, lastName } = data;
-    const payload = { id, email, firstName, lastName };
+    const { id } = data;
+    const payload = { id };
     return {
       ok: true,
       access_token: this.jwtService.sign(payload),
