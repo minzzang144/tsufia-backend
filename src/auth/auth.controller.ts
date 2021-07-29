@@ -1,5 +1,5 @@
 import { Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 import { AuthService } from '@auth/auth.service';
 import { LocalAuthGuard } from '@auth/guards/local-auth.guard';
@@ -15,5 +15,11 @@ export class AuthController {
   @Post('login')
   async login(@Req() req: RequestWithUser, @Res({ passthrough: true }) res: Response): Promise<LoginAuthOutputDto> {
     return this.authService.login(res, req.user);
+  }
+
+  /* Post Silent Refresh Controller */
+  @Post('silent-refresh')
+  async silentRefresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    return this.authService.silentRefresh(req, res);
   }
 }
