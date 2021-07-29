@@ -21,7 +21,10 @@ import { UsersModule } from '@users/users.module';
         DB_USERNAME: Joi.string(),
         DB_PASSWORD: Joi.string(),
         DB_NAME: Joi.string(),
-        JWT_SECRET_KEY: Joi.string(),
+        JWT_ACCESS_TOKEN_SECRET_KEY: Joi.string().required(),
+        JWT_REFRESH_TOKEN_SECRET_KEY: Joi.string().required(),
+        JWT_ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().required(),
+        JWT_REFRESH_TOKEN_EXPIRATION_TIME: Joi.string().required(),
       }),
     }),
     TypeOrmModule.forRoot({
