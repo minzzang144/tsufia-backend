@@ -1,9 +1,14 @@
 import * as bcrypt from 'bcrypt';
 import { classToPlain, Exclude } from 'class-transformer';
-import { IsEmail, IsString } from 'class-validator';
+import { IsEmail, IsOptional, IsString } from 'class-validator';
 import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm';
 
 import { Core } from '@common/entities/core.entity';
+
+export enum Provider {
+  Local,
+  Google,
+}
 
 @Entity()
 export class User extends Core {
@@ -19,15 +24,24 @@ export class User extends Core {
   @IsString()
   lastName: string;
 
-  @Exclude({ toPlainOnly: true })
-  @Column()
+  @Column({ nullable: true })
+  @IsOptional()
   @IsString()
-  password: string;
+  photo?: string;
+
+  @Exclude({ toPlainOnly: true })
+  @Column({ nullable: true })
+  @IsOptional()
+  @IsString()
+  password?: string;
+
+  @Column({ type: 'enum', enum: Provider, default: Provider.Local })
+  provider: Provider;
 
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword() {
-    this.password = await bcrypt.hash(this.password, 10);
+    if (this.provider === Provider.Local) this.password = await bcrypt.hash(this.password, 10);
   }
 
   async validatePassword(password: string): Promise<boolean> {
