@@ -47,3 +47,20 @@ export class GoogleController {
     return this.authService.googleLogin(req, res);
   }
 }
+
+@Controller('kakao')
+export class KakaoController {
+  constructor(private readonly authService: AuthService) {}
+
+  /* Get Kakao Auth */
+  @Get()
+  @UseGuards(AuthGuard('kakao'))
+  async kakaoAuth(@Req() req: Request) {}
+
+  /* Get Kakao Auth Callback */
+  @Get('callback')
+  @UseGuards(AuthGuard('kakao'))
+  async kakaoAuthCallback(@Req() req: Request) {
+    return req.user;
+  }
+}
