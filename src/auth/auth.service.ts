@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Request, Response } from 'express';
-import { Repository } from 'typeorm';
 
 import { GoogleRequest, RefreshTokenPayload } from '@auth/auth.interface';
 import { LoginAuthInputDto, LoginAuthOutputDto } from '@auth/dtos/login-auth.dto';
@@ -11,12 +9,13 @@ import { SilentRefreshAuthOutputDto } from '@auth/dtos/silent-refresh-auth.dto';
 import { ValidateAuthInputDto, ValidateAuthOutputDto } from '@auth/dtos/validate-auth.dto';
 import { UsersService } from '@users/users.service';
 import { GoogleLoginAuthOutputDto } from '@auth/dtos/google-login-auth.dto';
-import { Provider, User } from '@users/entities/user.entity';
+import { Provider } from '@users/entities/user.entity';
+import { UserRepository } from '@users/repositories/user.repository';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    private readonly userRepository: UserRepository,
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
@@ -113,49 +112,23 @@ export class AuthService {
       const {
         user: { email, firstName, lastName, photo },
       } = req;
-      let accessToken: string;
-      let refreshToken: string;
 
       // 유저 중복 검사
-      const findUser = await this.userRepository.findOne({ email });
+      const findUser = await this.userRepository.findOneOrCreate(
+        { email },
+        { email, firstName, lastName, photo, provider: Provider.Google },
+      );
       if (findUser && findUser.provider === Provider.Local) {
         return { ok: false, error: '현재 계정으로 가입한 이메일이 존재합니다.' };
       }
 
-      // 유저 생성
-      if (!findUser) {
-        const googleUser = this.userRepository.create({ email, firstName, lastName, photo, provider: Provider.Google });
-        await this.userRepository.save(googleUser);
-
-        // 생성된 구글 유저로부터 accessToken & refreshToken 발급
-        const googleUserPayload = { id: googleUser.id };
-        accessToken = this.jwtService.sign(googleUserPayload, {
-          secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET_KEY'),
-          expiresIn: +this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
-        });
-        refreshToken = this.jwtService.sign(googleUserPayload, {
-          secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET_KEY'),
-          expiresIn: +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
-        });
-
-        // 쿠키 설정
-        res.cookie('refreshToken', refreshToken, {
-          expires: new Date(Date.now() + +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')),
-          httpOnly: true,
-        });
-        return {
-          ok: true,
-          accessToken,
-        };
-      }
-
-      // 구글 가입이 되어 있는 경우
+      // 구글 가입이 되어 있는 경우 accessToken 및 refreshToken 발급
       const findUserPayload = { id: findUser.id };
-      accessToken = this.jwtService.sign(findUserPayload, {
+      const accessToken = this.jwtService.sign(findUserPayload, {
         secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET_KEY'),
         expiresIn: +this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
       });
-      refreshToken = this.jwtService.sign(findUserPayload, {
+      const refreshToken = this.jwtService.sign(findUserPayload, {
         secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET_KEY'),
         expiresIn: +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
       });
