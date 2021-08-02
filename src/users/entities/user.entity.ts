@@ -8,6 +8,7 @@ import { Core } from '@common/entities/core.entity';
 export enum Provider {
   Local,
   Google,
+  Kakao,
 }
 
 @Entity()
@@ -16,13 +17,20 @@ export class User extends Core {
   @IsEmail()
   email: string;
 
-  @Column()
+  @Column({ nullable: true })
+  @IsOptional()
   @IsString()
-  firstName: string;
+  firstName?: string;
 
-  @Column()
+  @Column({ nullable: true })
+  @IsOptional()
   @IsString()
-  lastName: string;
+  lastName?: string;
+
+  @Column({ nullable: true })
+  @IsOptional()
+  @IsString()
+  nickname?: string;
 
   @Column({ nullable: true })
   @IsOptional()
