@@ -3,12 +3,13 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Request, Response } from 'express';
 
-import { GoogleRequest, RefreshTokenPayload } from '@auth/auth.interface';
+import { GoogleRequest, KakaoRequest, RefreshTokenPayload } from '@auth/auth.interface';
+import { GoogleLoginAuthOutputDto } from '@auth/dtos/google-login-auth.dto';
+import { KakaoLoginAuthOutputDto } from '@auth/dtos/kakao-login-auth.dto';
 import { LoginAuthInputDto, LoginAuthOutputDto } from '@auth/dtos/login-auth.dto';
 import { SilentRefreshAuthOutputDto } from '@auth/dtos/silent-refresh-auth.dto';
 import { ValidateAuthInputDto, ValidateAuthOutputDto } from '@auth/dtos/validate-auth.dto';
 import { UsersService } from '@users/users.service';
-import { GoogleLoginAuthOutputDto } from '@auth/dtos/google-login-auth.dto';
 import { Provider } from '@users/entities/user.entity';
 import { UserRepository } from '@users/repositories/user.repository';
 
@@ -143,7 +144,46 @@ export class AuthService {
         accessToken,
       };
     } catch (error) {
-      console.log(error);
+      return { ok: false, error: '구글 로그인 인증을 실패 하였습니다.' };
+    }
+  }
+
+  async kakaoLogin(req: KakaoRequest, res: Response): Promise<KakaoLoginAuthOutputDto> {
+    try {
+      const {
+        user: { email, nickname, photo },
+      } = req;
+
+      // 유저 중복 검사
+      const findUser = await this.userRepository.findOneOrCreate(
+        { email },
+        { email, nickname, photo, provider: Provider.Kakao },
+      );
+      if (findUser && findUser.provider === Provider.Local) {
+        return { ok: false, error: '현재 계정으로 가입한 이메일이 존재합니다.' };
+      }
+
+      // 카카오 가입이 되어 있는 경우 accessToken 및 refreshToken 발급
+      const findUserPayload = { id: findUser.id };
+      const accessToken = this.jwtService.sign(findUserPayload, {
+        secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET_KEY'),
+        expiresIn: +this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
+      });
+      const refreshToken = this.jwtService.sign(findUserPayload, {
+        secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET_KEY'),
+        expiresIn: +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
+      });
+
+      // 쿠키 설정
+      res.cookie('refreshToken', refreshToken, {
+        expires: new Date(Date.now() + +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')),
+        httpOnly: true,
+      });
+      return {
+        ok: true,
+        accessToken,
+      };
+    } catch (error) {
       return { ok: false, error: '구글 로그인 인증을 실패 하였습니다.' };
     }
   }

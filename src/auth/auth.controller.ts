@@ -5,10 +5,11 @@ import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
 
 import { AuthService } from '@auth/auth.service';
-import { GoogleRequest, RequestWithUser } from '@auth/auth.interface';
+import { GoogleRequest, KakaoRequest, RequestWithUser } from '@auth/auth.interface';
 import { GoogleLoginAuthOutputDto } from '@auth/dtos/google-login-auth.dto';
 import { LoginAuthOutputDto } from '@auth/dtos/login-auth.dto';
 import { LocalAuthGuard } from '@auth/guards/local-auth.guard';
+import { KakaoLoginAuthOutputDto } from '@auth/dtos/kakao-login-auth.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -60,7 +61,10 @@ export class KakaoController {
   /* Get Kakao Auth Callback */
   @Get('callback')
   @UseGuards(AuthGuard('kakao'))
-  async kakaoAuthCallback(@Req() req: Request) {
-    return req.user;
+  async kakaoAuthCallback(
+    @Req() req: KakaoRequest,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<KakaoLoginAuthOutputDto> {
+    return this.authService.kakaoLogin(req, res);
   }
 }
