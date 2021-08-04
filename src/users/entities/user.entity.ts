@@ -1,7 +1,7 @@
 import * as bcrypt from 'bcrypt';
 import { classToPlain, Exclude } from 'class-transformer';
 import { IsEmail, IsOptional, IsString } from 'class-validator';
-import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm';
+import { AfterLoad, BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm';
 
 import { Core } from '@common/entities/core.entity';
 
@@ -15,48 +15,66 @@ export enum Provider {
 export class User extends Core {
   @Column({ unique: true })
   @IsEmail()
-  email: string;
+  public email: string;
 
   @Column({ nullable: true })
   @IsOptional()
   @IsString()
-  firstName?: string;
+  public firstName?: string;
 
   @Column({ nullable: true })
   @IsOptional()
   @IsString()
-  lastName?: string;
+  public lastName?: string;
 
   @Column({ nullable: true })
   @IsOptional()
   @IsString()
-  nickname?: string;
+  public nickname?: string;
 
   @Column({ nullable: true })
   @IsOptional()
   @IsString()
-  photo?: string;
+  public photo?: string;
 
   @Exclude({ toPlainOnly: true })
   @Column({ nullable: true })
   @IsOptional()
   @IsString()
-  password?: string;
+  public password?: string;
 
   @Column({ type: 'enum', enum: Provider, default: Provider.Local })
-  provider: Provider;
+  public provider: Provider;
+
+  @Exclude({ toPlainOnly: true })
+  @Column({ nullable: true })
+  @IsOptional()
+  @IsString()
+  public refreshToken?: string;
+
+  @Exclude({ toPlainOnly: true })
+  @IsOptional()
+  @IsString()
+  private tempPassword?: string;
+
+  @AfterLoad()
+  private loadTempPassword() {
+    this.tempPassword = this.password;
+  }
 
   @BeforeInsert()
   @BeforeUpdate()
-  async hashPassword() {
-    if (this.provider === Provider.Local) this.password = await bcrypt.hash(this.password, 10);
+  private async hashPassword() {
+    if (this.password && this.provider === Provider.Local && this.tempPassword !== this.password) {
+      this.password = await bcrypt.hash(this.password, 10);
+    }
   }
 
-  async validatePassword(password: string): Promise<boolean> {
+  public async validatePassword(password: string): Promise<boolean> {
     return bcrypt.compare(password, this.password);
   }
 
-  toJSON(): Record<string, any> {
+  public toJSON(): Record<string, any> {
     return classToPlain(this);
   }
 }
