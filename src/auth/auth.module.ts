@@ -1,6 +1,4 @@
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -14,21 +12,7 @@ import { UsersModule } from '@users/users.module';
 import { UserRepository } from '@users/repositories/user.repository';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([UserRepository]),
-    UsersModule,
-    PassportModule,
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get('JWT_ACCESS_TOKEN_SECRET_KEY'),
-        signOptions: {
-          expiresIn: +configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
-        },
-      }),
-    }),
-  ],
+  imports: [TypeOrmModule.forFeature([UserRepository]), UsersModule, PassportModule],
   providers: [AuthService, LocalStrategy, JwtStrategy, GoogleStrategy, KakaoStrategy],
   controllers: [AuthController, GoogleController, KakaoController],
 })
