@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
 import { Request, Response } from 'express';
+import * as jwt from 'jsonwebtoken';
 
-import { GoogleRequest, KakaoRequest, RefreshTokenPayload } from '@auth/auth.interface';
+import { GoogleRequest, KakaoRequest } from '@auth/auth.interface';
 import { GoogleLoginAuthOutputDto } from '@auth/dtos/google-login-auth.dto';
 import { KakaoLoginAuthOutputDto } from '@auth/dtos/kakao-login-auth.dto';
 import { LoginAuthInputDto, LoginAuthOutputDto } from '@auth/dtos/login-auth.dto';
@@ -18,7 +18,6 @@ export class AuthService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly usersService: UsersService,
-    private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
 
@@ -49,14 +48,18 @@ export class AuthService {
       // refreshToken & accessToken 발급
       const { id } = data;
       const payload = { id };
-      const accessToken = this.jwtService.sign(payload, {
-        secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET_KEY'),
+      const accessToken = jwt.sign(payload, this.configService.get('JWT_ACCESS_TOKEN_SECRET_KEY'), {
         expiresIn: +this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
       });
-      const refreshToken = this.jwtService.sign(payload, {
-        secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET_KEY'),
+      const refreshToken = jwt.sign({}, this.configService.get('JWT_REFRESH_TOKEN_SECRET_KEY'), {
         expiresIn: +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
+        audience: String(id),
       });
+
+      /* refreshToken 필드 업데이트 */
+      const loginUser = await this.userRepository.findOneOrFail(id);
+      loginUser.refreshToken = refreshToken;
+      await this.userRepository.save(loginUser);
 
       // 쿠키 설정
       res.cookie('refreshToken', refreshToken, {
@@ -77,21 +80,37 @@ export class AuthService {
     try {
       // refreshToken 유효성 검사
       const getRefreshToken = req.cookies['refreshToken'];
-      if (!getRefreshToken) return { ok: false, error: '쿠키를 가지고 있지 않습니다.' };
-      const refreshTokenPayload: RefreshTokenPayload = await this.jwtService.verify(getRefreshToken, {
-        secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET_KEY'),
-      });
+      if (!getRefreshToken) return { ok: false, error: '접근 권한을 가지고 있지 않습니다.' };
+      let userId: string | string[] | null;
+      jwt.verify(
+        getRefreshToken,
+        this.configService.get('JWT_REFRESH_TOKEN_SECRET_KEY'),
+        (err: jwt.VerifyErrors | null, decoded: jwt.JwtPayload | undefined) => {
+          if (err) throw new UnauthorizedException();
+          userId = decoded.aud;
+          console.log(userId);
+        },
+      );
+      const loginUser = await this.userRepository.findOneOrFail(+userId);
+      if (loginUser.refreshToken !== getRefreshToken) {
+        loginUser.refreshToken = '';
+        await this.userRepository.save(loginUser);
+        return { ok: false, error: '잘못된 접근입니다.' };
+      }
 
       // refreshToken & accessToken 재발급
-      const payload = { id: refreshTokenPayload.id };
-      const accessToken = this.jwtService.sign(payload, {
-        secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET_KEY'),
+      const payload = { id: userId };
+      const accessToken = jwt.sign(payload, this.configService.get('JWT_ACCESS_TOKEN_SECRET_KEY'), {
         expiresIn: +this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
       });
-      const refreshToken = this.jwtService.sign(payload, {
-        secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET_KEY'),
+      const refreshToken = jwt.sign({}, this.configService.get('JWT_REFRESH_TOKEN_SECRET_KEY'), {
         expiresIn: +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
+        audience: String(userId),
       });
+
+      /* refreshToken 필드 업데이트 */
+      loginUser.refreshToken = refreshToken;
+      await this.userRepository.save(loginUser);
 
       // 쿠키 설정
       res.cookie('refreshToken', refreshToken, {
@@ -119,20 +138,23 @@ export class AuthService {
         { email },
         { email, firstName, lastName, photo, provider: Provider.Google },
       );
-      if (findUser && findUser.provider === Provider.Local) {
+      if (findUser && findUser.provider !== Provider.Google) {
         return { ok: false, error: '현재 계정으로 가입한 이메일이 존재합니다.' };
       }
 
       // 구글 가입이 되어 있는 경우 accessToken 및 refreshToken 발급
       const findUserPayload = { id: findUser.id };
-      const accessToken = this.jwtService.sign(findUserPayload, {
-        secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET_KEY'),
+      const accessToken = jwt.sign(findUserPayload, this.configService.get('JWT_ACCESS_TOKEN_SECRET_KEY'), {
         expiresIn: +this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
       });
-      const refreshToken = this.jwtService.sign(findUserPayload, {
-        secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET_KEY'),
+      const refreshToken = jwt.sign({}, this.configService.get('JWT_REFRESH_TOKEN_SECRET_KEY'), {
         expiresIn: +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
+        audience: String(findUser.id),
       });
+
+      /* refreshToken 필드 업데이트 */
+      findUser.refreshToken = refreshToken;
+      await this.userRepository.save(findUser);
 
       // 쿠키 설정
       res.cookie('refreshToken', refreshToken, {
@@ -159,20 +181,23 @@ export class AuthService {
         { email },
         { email, nickname, photo, provider: Provider.Kakao },
       );
-      if (findUser && findUser.provider === Provider.Local) {
+      if (findUser && findUser.provider !== Provider.Kakao) {
         return { ok: false, error: '현재 계정으로 가입한 이메일이 존재합니다.' };
       }
 
       // 카카오 가입이 되어 있는 경우 accessToken 및 refreshToken 발급
       const findUserPayload = { id: findUser.id };
-      const accessToken = this.jwtService.sign(findUserPayload, {
-        secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET_KEY'),
+      const accessToken = jwt.sign(findUserPayload, this.configService.get('JWT_ACCESS_TOKEN_SECRET_KEY'), {
         expiresIn: +this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
       });
-      const refreshToken = this.jwtService.sign(findUserPayload, {
-        secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET_KEY'),
+      const refreshToken = jwt.sign({}, this.configService.get('JWT_REFRESH_TOKEN_SECRET_KEY'), {
         expiresIn: +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
+        audience: String(findUser.id),
       });
+
+      /* refreshToken 필드 업데이트 */
+      findUser.refreshToken = refreshToken;
+      await this.userRepository.save(findUser);
 
       // 쿠키 설정
       res.cookie('refreshToken', refreshToken, {

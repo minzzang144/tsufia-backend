@@ -5,13 +5,6 @@ import { ValidateAuthOutputDto } from '@auth/dtos/validate-auth.dto';
 /* Local Login Strategy */
 export type RequestWithUser = Request & { user: ValidateAuthOutputDto };
 
-/* Silent Refresh */
-export interface RefreshTokenPayload {
-  id: number;
-  iat: string;
-  exp: string;
-}
-
 /* JWT Strategy */
 export interface Payload {
   id: number;
