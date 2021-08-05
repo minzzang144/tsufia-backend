@@ -41,7 +41,7 @@ export class AuthService {
     try {
       const { ok, error, data } = loginAuthInputDto;
 
-      // 로그인인 상태 확인
+      // 로그인 상태 확인
       if (ok === false) return { ok: false, error };
       if (data == null) return { ok: false, error: '토큰을 발급 받을 수 없습니다.' };
 
@@ -88,7 +88,6 @@ export class AuthService {
         (err: jwt.VerifyErrors | null, decoded: jwt.JwtPayload | undefined) => {
           if (err) throw new UnauthorizedException();
           userId = decoded.aud;
-          console.log(userId);
         },
       );
       const loginUser = await this.userRepository.findOneOrFail(+userId);
