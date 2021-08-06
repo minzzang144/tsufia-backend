@@ -1,15 +1,16 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
 
 import { AuthService } from '@auth/auth.service';
 import { GoogleRequest, KakaoRequest, RequestWithUser } from '@auth/auth.interface';
 import { GoogleLoginAuthOutputDto } from '@auth/dtos/google-login-auth.dto';
 import { LoginAuthOutputDto } from '@auth/dtos/login-auth.dto';
-import { LocalAuthGuard } from '@auth/guards/local-auth.guard';
 import { KakaoLoginAuthOutputDto } from '@auth/dtos/kakao-login-auth.dto';
+import { GoogleAuthGuard } from '@auth/guards/google-auth.guard';
+import { KakaoAuthGuard } from '@auth/guards/kakao-auth.guard';
+import { LocalAuthGuard } from '@auth/guards/local-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -35,12 +36,12 @@ export class GoogleController {
 
   /* Get Google Auth */
   @Get()
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleAuthGuard)
   async googleAuth(@Req() _req: Request) {}
 
   /* Get Google Auth Callback */
   @Get('callback')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleAuthGuard)
   async googleAuthCallback(
     @Req() req: GoogleRequest,
     @Res({ passthrough: true }) res: Response,
@@ -55,12 +56,12 @@ export class KakaoController {
 
   /* Get Kakao Auth */
   @Get()
-  @UseGuards(AuthGuard('kakao'))
+  @UseGuards(KakaoAuthGuard)
   async kakaoAuth(@Req() req: Request) {}
 
   /* Get Kakao Auth Callback */
   @Get('callback')
-  @UseGuards(AuthGuard('kakao'))
+  @UseGuards(KakaoAuthGuard)
   async kakaoAuthCallback(
     @Req() req: KakaoRequest,
     @Res({ passthrough: true }) res: Response,
