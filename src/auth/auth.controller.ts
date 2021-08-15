@@ -4,11 +4,10 @@ import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common
 import { Request, Response } from 'express';
 
 import { AuthService } from '@auth/auth.service';
-import { KakaoRequest, RequestWithUser } from '@auth/auth.interface';
+import { RequestWithUser } from '@auth/auth.interface';
 import { GoogleLoginAuthInputDto, GoogleLoginAuthOutputDto } from '@auth/dtos/google-login-auth.dto';
 import { LoginAuthOutputDto } from '@auth/dtos/login-auth.dto';
-import { KakaoLoginAuthOutputDto } from '@auth/dtos/kakao-login-auth.dto';
-import { KakaoAuthGuard } from '@auth/guards/kakao-auth.guard';
+import { KakaoLoginAuthInputDto, KakaoLoginAuthOutputDto } from '@auth/dtos/kakao-login-auth.dto';
 import { LocalAuthGuard } from '@auth/guards/local-auth.guard';
 
 @Controller('auth')
@@ -36,8 +35,8 @@ export class GoogleController {
   /* Post Google Auth */
   @Post()
   async googleAuth(
-    @Body() googleLoginAuthInputDto: GoogleLoginAuthInputDto,
     @Res({ passthrough: true }) res: Response,
+    @Body() googleLoginAuthInputDto: GoogleLoginAuthInputDto,
   ): Promise<GoogleLoginAuthOutputDto> {
     return this.authService.googleLogin(res, googleLoginAuthInputDto);
   }
@@ -47,18 +46,12 @@ export class GoogleController {
 export class KakaoController {
   constructor(private readonly authService: AuthService) {}
 
-  /* Get Kakao Auth */
-  @Get()
-  @UseGuards(KakaoAuthGuard)
-  async kakaoAuth(@Req() req: Request) {}
-
-  /* Get Kakao Auth Callback */
-  @Get('callback')
-  @UseGuards(KakaoAuthGuard)
-  async kakaoAuthCallback(
-    @Req() req: KakaoRequest,
+  /* Post Google Auth */
+  @Post()
+  async kakaoAuth(
     @Res({ passthrough: true }) res: Response,
+    @Body() kakaoLoginAuthInputDto: KakaoLoginAuthInputDto,
   ): Promise<KakaoLoginAuthOutputDto> {
-    return this.authService.kakaoLogin(req, res);
+    return this.authService.kakaoLogin(res, kakaoLoginAuthInputDto);
   }
 }

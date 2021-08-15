@@ -3,9 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 
-import { KakaoRequest } from '@auth/auth.interface';
 import { GoogleLoginAuthInputDto, GoogleLoginAuthOutputDto } from '@auth/dtos/google-login-auth.dto';
-import { KakaoLoginAuthOutputDto } from '@auth/dtos/kakao-login-auth.dto';
+import { KakaoLoginAuthInputDto, KakaoLoginAuthOutputDto } from '@auth/dtos/kakao-login-auth.dto';
 import { LoginAuthInputDto, LoginAuthOutputDto } from '@auth/dtos/login-auth.dto';
 import { SilentRefreshAuthOutputDto } from '@auth/dtos/silent-refresh-auth.dto';
 import { ValidateAuthInputDto, ValidateAuthOutputDto } from '@auth/dtos/validate-auth.dto';
@@ -170,11 +169,9 @@ export class AuthService {
     }
   }
 
-  async kakaoLogin(req: KakaoRequest, res: Response): Promise<KakaoLoginAuthOutputDto> {
+  async kakaoLogin(res: Response, kakaoLoginAuthInputDto: KakaoLoginAuthInputDto): Promise<KakaoLoginAuthOutputDto> {
     try {
-      const {
-        user: { email, nickname, photo },
-      } = req;
+      const { email, nickname, photo } = kakaoLoginAuthInputDto;
 
       // 유저 중복 검사
       const findUser = await this.userRepository.findOneOrCreate(
