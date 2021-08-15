@@ -3,8 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 
-import { GoogleRequest, KakaoRequest } from '@auth/auth.interface';
-import { GoogleLoginAuthOutputDto } from '@auth/dtos/google-login-auth.dto';
+import { KakaoRequest } from '@auth/auth.interface';
+import { GoogleLoginAuthInputDto, GoogleLoginAuthOutputDto } from '@auth/dtos/google-login-auth.dto';
 import { KakaoLoginAuthOutputDto } from '@auth/dtos/kakao-login-auth.dto';
 import { LoginAuthInputDto, LoginAuthOutputDto } from '@auth/dtos/login-auth.dto';
 import { SilentRefreshAuthOutputDto } from '@auth/dtos/silent-refresh-auth.dto';
@@ -80,7 +80,7 @@ export class AuthService {
     try {
       // refreshToken 유효성 검사
       const getRefreshToken = req.cookies['refreshToken'];
-      if (!getRefreshToken) return { ok: false, error: '접근 권한을 가지고 있지 않습니다.' };
+      if (!getRefreshToken) return { ok: false };
       let userId: string | string[] | null;
       jwt.verify(
         getRefreshToken,
@@ -126,11 +126,12 @@ export class AuthService {
   }
 
   /* Google Login */
-  async googleLogin(req: GoogleRequest, res: Response): Promise<GoogleLoginAuthOutputDto> {
+  async googleLogin(
+    res: Response,
+    googleLoginAuthInputDto: GoogleLoginAuthInputDto,
+  ): Promise<GoogleLoginAuthOutputDto> {
     try {
-      const {
-        user: { email, firstName, lastName, photo },
-      } = req;
+      const { email, firstName, lastName, photo } = googleLoginAuthInputDto;
 
       // 유저 중복 검사
       const findUser = await this.userRepository.findOneOrCreate(

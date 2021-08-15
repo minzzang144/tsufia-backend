@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 import { AuthService } from '@auth/auth.service';
-import { GoogleRequest, KakaoRequest, RequestWithUser } from '@auth/auth.interface';
-import { GoogleLoginAuthOutputDto } from '@auth/dtos/google-login-auth.dto';
+import { KakaoRequest, RequestWithUser } from '@auth/auth.interface';
+import { GoogleLoginAuthInputDto, GoogleLoginAuthOutputDto } from '@auth/dtos/google-login-auth.dto';
 import { LoginAuthOutputDto } from '@auth/dtos/login-auth.dto';
 import { KakaoLoginAuthOutputDto } from '@auth/dtos/kakao-login-auth.dto';
-import { GoogleAuthGuard } from '@auth/guards/google-auth.guard';
 import { KakaoAuthGuard } from '@auth/guards/kakao-auth.guard';
 import { LocalAuthGuard } from '@auth/guards/local-auth.guard';
 
@@ -34,19 +33,13 @@ export class AuthController {
 export class GoogleController {
   constructor(private readonly authService: AuthService) {}
 
-  /* Get Google Auth */
-  @Get()
-  @UseGuards(GoogleAuthGuard)
-  async googleAuth(@Req() _req: Request) {}
-
-  /* Get Google Auth Callback */
-  @Get('callback')
-  @UseGuards(GoogleAuthGuard)
-  async googleAuthCallback(
-    @Req() req: GoogleRequest,
+  /* Post Google Auth */
+  @Post()
+  async googleAuth(
+    @Body() googleLoginAuthInputDto: GoogleLoginAuthInputDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<GoogleLoginAuthOutputDto> {
-    return this.authService.googleLogin(req, res);
+    return this.authService.googleLogin(res, googleLoginAuthInputDto);
   }
 }
 

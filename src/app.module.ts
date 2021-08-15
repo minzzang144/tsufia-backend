@@ -25,8 +25,6 @@ import { UsersModule } from '@users/users.module';
         JWT_REFRESH_TOKEN_SECRET_KEY: Joi.string().required(),
         JWT_ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().required(),
         JWT_REFRESH_TOKEN_EXPIRATION_TIME: Joi.string().required(),
-        GOOGLE_CLIENT_ID: Joi.string().required(),
-        GOOGLE_SECRET: Joi.string().required(),
         KAKAO_CLIENT_ID: Joi.string().required(),
       }),
     }),
