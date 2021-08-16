@@ -2,6 +2,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
+      "@chats/*": ["src/chats/*"],
+      "@rooms/*": ["src/rooms/*"],
       "@auth/*": ["src/auth/*"],
       "@common/*": ["src/common/*"],
       "@users/*": ["src/users/*"],

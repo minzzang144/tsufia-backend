@@ -6,6 +6,7 @@ import * as Joi from 'joi';
 
 import { AppGateway } from '@/app.gateway';
 import { AuthModule } from '@auth/auth.module';
+import { RoomsModule } from '@rooms/rooms.module';
 import { User } from '@users/entities/user.entity';
 import { UsersModule } from '@users/users.module';
 
@@ -41,6 +42,7 @@ import { UsersModule } from '@users/users.module';
     AuthModule,
     CommonModule,
     UsersModule,
+    RoomsModule,
   ],
   providers: [AppGateway],
 })
