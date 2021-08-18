@@ -6,9 +6,10 @@ import * as Joi from 'joi';
 
 import { AppGateway } from '@/app.gateway';
 import { AuthModule } from '@auth/auth.module';
-import { RoomsModule } from '@rooms/rooms.module';
-import { User } from '@users/entities/user.entity';
 import { UsersModule } from '@users/users.module';
+import { User } from '@users/entities/user.entity';
+import { RoomsModule } from '@rooms/rooms.module';
+import { Room } from '@rooms/entities/room.entity';
 
 @Module({
   imports: [
@@ -36,7 +37,7 @@ import { UsersModule } from '@users/users.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [User],
+      entities: [User, Room],
       synchronize: true,
     }),
     AuthModule,

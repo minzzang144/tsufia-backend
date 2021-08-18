@@ -1,9 +1,10 @@
 import * as bcrypt from 'bcrypt';
 import { classToPlain, Exclude } from 'class-transformer';
-import { IsEmail, IsOptional, IsString } from 'class-validator';
-import { AfterLoad, BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm';
+import { IsBoolean, IsEmail, IsOptional, IsString } from 'class-validator';
+import { AfterLoad, BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne } from 'typeorm';
 
 import { Core } from '@common/entities/core.entity';
+import { Room } from '@rooms/entities/room.entity';
 
 export enum Provider {
   Local,
@@ -51,6 +52,13 @@ export class User extends Core {
   @IsOptional()
   @IsString()
   public refreshToken?: string;
+
+  @ManyToOne(() => Room, (room) => room.userList)
+  room: Room;
+
+  @Column({ default: false })
+  @IsBoolean()
+  host: boolean;
 
   @Exclude({ toPlainOnly: true })
   @IsOptional()
