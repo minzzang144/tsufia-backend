@@ -7,6 +7,7 @@ import { CreateRoomInputDto, CreateRoomOutputDto } from '@rooms/dtos/create-room
 import { Room, Status } from '@rooms/entities/room.entity';
 import { User } from '@users/entities/user.entity';
 import { GetRoomsOutputDto } from '@rooms/dtos/get-rooms.dts';
+import { GetRoomOutputDto } from '@rooms/dtos/get-room.dto';
 
 @Injectable()
 export class RoomsService {
@@ -59,6 +60,22 @@ export class RoomsService {
       return { ok: true, rooms };
     } catch (error) {
       return { ok: false, error: '방들의 정보를 불러올 수 없습니다' };
+    }
+  }
+
+  async getRoom(requestWithUser: RequestWithUser, roomId: string): Promise<GetRoomOutputDto> {
+    try {
+      // 사용자 인증 상태 확인
+      const {
+        user: { id },
+      } = requestWithUser;
+      if (!id) return { ok: false, error: '접근 권한을 가지고 있지 않습니다' };
+
+      const room = await this.roomRepository.findOneOrFail({ id: +roomId });
+      if (!room) return { ok: false, error: '방이 삭제 되었거나 정보를 불러올 수 없습니다' };
+      return { ok: true, room };
+    } catch (error) {
+      return { ok: false, error: '방의 정보를 불러올 수 없습니다' };
     }
   }
 }
