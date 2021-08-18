@@ -1,5 +1,5 @@
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { CreateRoomInputDto, CreateRoomOutputDto } from '@rooms/dtos/create-room.dto';
 import { RequestWithUser } from '@rooms/rooms.interface';
 import { RoomsService } from '@rooms/rooms.service';
@@ -15,5 +15,11 @@ export class RoomsController {
     @Body() createRoomInputDto: CreateRoomInputDto,
   ): Promise<CreateRoomOutputDto> {
     return this.roomsService.createRoom(requestWithUser, createRoomInputDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async getRooms(@Req() requestWithUser: RequestWithUser) {
+    return this.roomsService.getRooms(requestWithUser);
   }
 }
