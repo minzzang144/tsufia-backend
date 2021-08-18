@@ -8,6 +8,7 @@ import { Room, Status } from '@rooms/entities/room.entity';
 import { User } from '@users/entities/user.entity';
 import { GetRoomsOutputDto } from '@rooms/dtos/get-rooms.dts';
 import { GetRoomOutputDto } from '@rooms/dtos/get-room.dto';
+import { PatchRoomInputDto, PatchRoomOutputDto } from '@rooms/dtos/patch-room.dto';
 
 @Injectable()
 export class RoomsService {
@@ -76,6 +77,33 @@ export class RoomsService {
       return { ok: true, room };
     } catch (error) {
       return { ok: false, error: '방의 정보를 불러올 수 없습니다' };
+    }
+  }
+
+  async patchRoom(requestWithUser: RequestWithUser, patchRoomInputDto: PatchRoomInputDto): Promise<PatchRoomOutputDto> {
+    try {
+      // 사용자 인증 상태 확인
+      const {
+        user: { id },
+      } = requestWithUser;
+      if (!id) return { ok: false, error: '접근 권한을 가지고 있지 않습니다' };
+
+      // 방장 여부 확인
+      const { title, totalHeadCount } = patchRoomInputDto;
+      const currentUser = await this.userRepository.findOne({ id }, { select: ['id', 'roomId', 'host'] });
+      const room = await this.roomRepository.findOne({ id: currentUser.roomId }, { relations: ['userList'] });
+      if (currentUser.host === false) return { ok: false, error: '방장 외에 다른 사람이 변경할 수 없습니다' };
+      if (currentUser.host === true) {
+        if (title) room.title = title;
+        if (totalHeadCount && room.currentHeadCount > totalHeadCount)
+          return { ok: false, error: '업데이트 하려는 인원수를 이미 초과하였습니다' };
+        if (totalHeadCount) room.totalHeadCount = totalHeadCount;
+      }
+      await this.roomRepository.save(room);
+      return { ok: true, room };
+    } catch (error) {
+      console.log(error);
+      return { ok: false, error: '방의 정보를 업데이트 할 수 없습니다' };
     }
   }
 }

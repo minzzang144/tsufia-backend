@@ -1,8 +1,9 @@
+import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
-import { CreateRoomInputDto, CreateRoomOutputDto } from '@rooms/dtos/create-room.dto';
 import { RequestWithUser } from '@rooms/rooms.interface';
 import { RoomsService } from '@rooms/rooms.service';
+import { CreateRoomInputDto, CreateRoomOutputDto } from '@rooms/dtos/create-room.dto';
+import { PatchRoomInputDto, PatchRoomOutputDto } from '@rooms/dtos/patch-room.dto';
 
 @Controller('rooms')
 export class RoomsController {
@@ -27,5 +28,14 @@ export class RoomsController {
   @Get(':id')
   async getRoom(@Req() requestWithUser: RequestWithUser, @Param('id') roomId: string) {
     return this.roomsService.getRoom(requestWithUser, roomId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('update')
+  async patchRoom(
+    @Req() requestWithUser: RequestWithUser,
+    @Body() patchRoomInputDto: PatchRoomInputDto,
+  ): Promise<PatchRoomOutputDto> {
+    return this.roomsService.patchRoom(requestWithUser, patchRoomInputDto);
   }
 }

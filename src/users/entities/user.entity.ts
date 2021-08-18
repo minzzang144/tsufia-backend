@@ -1,7 +1,7 @@
 import * as bcrypt from 'bcrypt';
 import { classToPlain, Exclude } from 'class-transformer';
 import { IsBoolean, IsEmail, IsOptional, IsString } from 'class-validator';
-import { AfterLoad, BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne } from 'typeorm';
+import { AfterLoad, BeforeInsert, BeforeUpdate, Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
 import { Core } from '@common/entities/core.entity';
 import { Room } from '@rooms/entities/room.entity';
@@ -54,7 +54,13 @@ export class User extends Core {
   public refreshToken?: string;
 
   @ManyToOne(() => Room, (room) => room.userList)
-  room: Room;
+  @JoinColumn({ name: 'roomId' })
+  public room: Room;
+
+  @Column({ nullable: true })
+  @IsOptional()
+  @IsString()
+  public roomId?: number;
 
   @Column({ default: false })
   @IsBoolean()

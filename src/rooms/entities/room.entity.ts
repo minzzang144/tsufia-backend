@@ -32,6 +32,7 @@ export class Room extends Core {
   @IsEnum(Status)
   public status: Status;
 
+  // cascase: true -> Room Entity가 저장될 때 User Entity도 같이 저장한다
   @OneToMany(() => User, (user) => user.room, { cascade: true })
   public userList: User[];
 }
