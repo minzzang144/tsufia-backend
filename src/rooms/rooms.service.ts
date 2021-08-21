@@ -4,11 +4,12 @@ import { Repository } from 'typeorm';
 
 import { RequestWithUser } from '@rooms/rooms.interface';
 import { CreateRoomInputDto, CreateRoomOutputDto } from '@rooms/dtos/create-room.dto';
-import { Room, Status } from '@rooms/entities/room.entity';
-import { User } from '@users/entities/user.entity';
 import { GetRoomsOutputDto } from '@rooms/dtos/get-rooms.dts';
 import { GetRoomOutputDto } from '@rooms/dtos/get-room.dto';
 import { PatchRoomInputDto, PatchRoomOutputDto } from '@rooms/dtos/patch-room.dto';
+import { DeleteRoomOutputDto } from '@rooms/dtos/delete-room.dto';
+import { Room, Status } from '@rooms/entities/room.entity';
+import { User } from '@users/entities/user.entity';
 
 @Injectable()
 export class RoomsService {
@@ -102,8 +103,37 @@ export class RoomsService {
       await this.roomRepository.save(room);
       return { ok: true, room };
     } catch (error) {
-      console.log(error);
       return { ok: false, error: '방의 정보를 업데이트 할 수 없습니다' };
+    }
+  }
+
+  async deleteRoom(requestWithUser: RequestWithUser): Promise<DeleteRoomOutputDto> {
+    try {
+      // 사용자 인증 상태 확인
+      const {
+        user: { id },
+      } = requestWithUser;
+      if (!id) return { ok: false, error: '접근 권한을 가지고 있지 않습니다' };
+
+      const currentUser = await this.userRepository.findOne({ id }, { select: ['id', 'roomId', 'host'] });
+      const currnetRoom = await this.roomRepository.findOne({ id: currentUser.roomId }, { relations: ['userList'] });
+      const roomId = currnetRoom.id;
+      if (currnetRoom.userList.length !== 1) return { ok: false };
+      if (currnetRoom.userList.length === 1) {
+        // 방장 권한 삭제
+        currentUser.host = false;
+        const index = currnetRoom.userList.findIndex((user) => user.id === currentUser.id);
+        currnetRoom.userList.splice(index, 1, currentUser);
+        await this.roomRepository.save(currnetRoom);
+
+        // 방 삭제
+        const result = await this.roomRepository.remove(currnetRoom);
+        if (!result) return { ok: false, error: '방을 삭제하는데 실패하였습니다' };
+      }
+      return { ok: true, roomId };
+    } catch (error) {
+      console.log(error);
+      return { ok: false, error: '방을 삭제할 수 없습니다' };
     }
   }
 }

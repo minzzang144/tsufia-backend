@@ -53,7 +53,8 @@ export class User extends Core {
   @IsString()
   public refreshToken?: string;
 
-  @ManyToOne(() => Room, (room) => room.userList)
+  // onDelete: 'SET NULL' -> 부모 Entity(Room)이 삭제될 경우 room값을 null로 설정한다.
+  @ManyToOne(() => Room, (room) => room.userList, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'roomId' })
   public room: Room;
 
