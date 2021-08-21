@@ -48,10 +48,10 @@ export class AuthService {
       const { id } = data;
       const payload = { id };
       const accessToken = jwt.sign(payload, this.configService.get('JWT_ACCESS_TOKEN_SECRET_KEY'), {
-        expiresIn: +this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
+        expiresIn: this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
       });
       const refreshToken = jwt.sign({}, this.configService.get('JWT_REFRESH_TOKEN_SECRET_KEY'), {
-        expiresIn: +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
+        expiresIn: this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
         audience: String(id),
       });
 
@@ -62,7 +62,7 @@ export class AuthService {
 
       // 쿠키 설정
       res.cookie('refreshToken', refreshToken, {
-        expires: new Date(Date.now() + +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')),
+        expires: new Date(Date.now() + this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')),
         httpOnly: true,
       });
       return {
@@ -99,10 +99,10 @@ export class AuthService {
       // refreshToken & accessToken 재발급
       const payload = { id: userId };
       const accessToken = jwt.sign(payload, this.configService.get('JWT_ACCESS_TOKEN_SECRET_KEY'), {
-        expiresIn: +this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
+        expiresIn: this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
       });
       const refreshToken = jwt.sign({}, this.configService.get('JWT_REFRESH_TOKEN_SECRET_KEY'), {
-        expiresIn: +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
+        expiresIn: this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
         audience: String(userId),
       });
 
@@ -112,7 +112,7 @@ export class AuthService {
 
       // 쿠키 설정
       res.cookie('refreshToken', refreshToken, {
-        expires: new Date(Date.now() + +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')),
+        expires: new Date(Date.now() + this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')),
         httpOnly: true,
       });
       return {
@@ -144,10 +144,10 @@ export class AuthService {
       // 구글 가입이 되어 있는 경우 accessToken 및 refreshToken 발급
       const findUserPayload = { id: findUser.id };
       const accessToken = jwt.sign(findUserPayload, this.configService.get('JWT_ACCESS_TOKEN_SECRET_KEY'), {
-        expiresIn: +this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
+        expiresIn: this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
       });
       const refreshToken = jwt.sign({}, this.configService.get('JWT_REFRESH_TOKEN_SECRET_KEY'), {
-        expiresIn: +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
+        expiresIn: this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
         audience: String(findUser.id),
       });
 
@@ -157,7 +157,7 @@ export class AuthService {
 
       // 쿠키 설정
       res.cookie('refreshToken', refreshToken, {
-        expires: new Date(Date.now() + +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')),
+        expires: new Date(Date.now() + this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')),
         httpOnly: true,
       });
       return {
@@ -185,10 +185,10 @@ export class AuthService {
       // 카카오 가입이 되어 있는 경우 accessToken 및 refreshToken 발급
       const findUserPayload = { id: findUser.id };
       const accessToken = jwt.sign(findUserPayload, this.configService.get('JWT_ACCESS_TOKEN_SECRET_KEY'), {
-        expiresIn: +this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
+        expiresIn: this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
       });
       const refreshToken = jwt.sign({}, this.configService.get('JWT_REFRESH_TOKEN_SECRET_KEY'), {
-        expiresIn: +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
+        expiresIn: this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
         audience: String(findUser.id),
       });
 
@@ -198,7 +198,7 @@ export class AuthService {
 
       // 쿠키 설정
       res.cookie('refreshToken', refreshToken, {
-        expires: new Date(Date.now() + +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')),
+        expires: new Date(Date.now() + this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')),
         httpOnly: true,
       });
       return {
