@@ -107,6 +107,34 @@ export class RoomsService {
     }
   }
 
+  async enterRoom(requestWithUser: RequestWithUser, roomId: string): Promise<PatchRoomOutputDto> {
+    try {
+      // 사용자 인증 상태 확인
+      const {
+        user: { id },
+      } = requestWithUser;
+      if (!id) return { ok: false, error: '접근 권한을 가지고 있지 않습니다' };
+
+      const currentUser = await this.userRepository.findOne({ id });
+      const roomToEnter = await this.roomRepository.findOne({ id: +roomId }, { relations: ['userList'] });
+      switch (roomToEnter.currentHeadCount < roomToEnter.totalHeadCount) {
+        // 입장하려는 방이 최대인원을 초과하지 않은 경우
+        case true:
+          roomToEnter.currentHeadCount += 1;
+          roomToEnter.userList.push(currentUser);
+          const result = await this.roomRepository.save(roomToEnter);
+          return { ok: true, room: result };
+        // 입장하려는 방이 최대인원을 초과한 경우
+        case false:
+          return { ok: false, error: '더 이상 입장하실 수 없습니다' };
+        default:
+          break;
+      }
+    } catch (error) {
+      return { ok: false, error: '입장할 수 없습니다' };
+    }
+  }
+
   async deleteRoom(requestWithUser: RequestWithUser): Promise<DeleteRoomOutputDto> {
     try {
       // 사용자 인증 상태 확인

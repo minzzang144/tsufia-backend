@@ -46,3 +46,14 @@ export class RoomsController {
     return this.roomsService.deleteRoom(requestWithUser);
   }
 }
+
+@Controller('api/rooms')
+export class RoomsAPIController {
+  constructor(private readonly roomsService: RoomsService) {}
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/enter')
+  async enterRoom(@Req() requestWithUser: RequestWithUser, @Param('id') roomId: string): Promise<PatchRoomOutputDto> {
+    return this.roomsService.enterRoom(requestWithUser, roomId);
+  }
+}
