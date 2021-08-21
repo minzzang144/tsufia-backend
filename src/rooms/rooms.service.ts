@@ -18,6 +18,7 @@ export class RoomsService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
+  /* Create Room Service */
   async createRoom(
     requestWithUser: RequestWithUser,
     createRoomInputDto: CreateRoomInputDto,
@@ -50,6 +51,7 @@ export class RoomsService {
     }
   }
 
+  /* Get Rooms Service */
   async getRooms(requestWithUser: RequestWithUser): Promise<GetRoomsOutputDto> {
     try {
       // 사용자 인증 상태 확인
@@ -65,6 +67,7 @@ export class RoomsService {
     }
   }
 
+  /* Get Room Service */
   async getRoom(requestWithUser: RequestWithUser, roomId: string): Promise<GetRoomOutputDto> {
     try {
       // 사용자 인증 상태 확인
@@ -81,6 +84,7 @@ export class RoomsService {
     }
   }
 
+  /* Patch Room Service */
   async patchRoom(requestWithUser: RequestWithUser, patchRoomInputDto: PatchRoomInputDto): Promise<PatchRoomOutputDto> {
     try {
       // 사용자 인증 상태 확인
@@ -107,6 +111,37 @@ export class RoomsService {
     }
   }
 
+  /* Delete Room Service */
+  async deleteRoom(requestWithUser: RequestWithUser): Promise<DeleteRoomOutputDto> {
+    try {
+      // 사용자 인증 상태 확인
+      const {
+        user: { id },
+      } = requestWithUser;
+      if (!id) return { ok: false, error: '접근 권한을 가지고 있지 않습니다' };
+
+      const currentUser = await this.userRepository.findOne({ id }, { select: ['id', 'roomId', 'host'] });
+      const currnetRoom = await this.roomRepository.findOne({ id: currentUser.roomId }, { relations: ['userList'] });
+      const roomId = currnetRoom.id;
+      if (currnetRoom.userList.length !== 1) return { ok: false };
+      if (currnetRoom.userList.length === 1) {
+        // 방장 권한 삭제
+        currentUser.host = false;
+        const index = currnetRoom.userList.findIndex((user) => user.id === currentUser.id);
+        currnetRoom.userList.splice(index, 1, currentUser);
+        await this.roomRepository.save(currnetRoom);
+
+        // 방 삭제
+        const result = await this.roomRepository.remove(currnetRoom);
+        if (!result) return { ok: false, error: '방을 삭제하는데 실패하였습니다' };
+      }
+      return { ok: true, roomId };
+    } catch (error) {
+      return { ok: false, error: '방을 삭제할 수 없습니다' };
+    }
+  }
+
+  /* Enter Room API Service */
   async enterRoom(requestWithUser: RequestWithUser, roomId: string): Promise<PatchRoomOutputDto> {
     try {
       // 사용자 인증 상태 확인
@@ -135,7 +170,8 @@ export class RoomsService {
     }
   }
 
-  async deleteRoom(requestWithUser: RequestWithUser): Promise<DeleteRoomOutputDto> {
+  /* Leave Room API Service */
+  async leaveRoom(requestWithUser: RequestWithUser, roomId: string): Promise<PatchRoomOutputDto> {
     try {
       // 사용자 인증 상태 확인
       const {
@@ -143,25 +179,53 @@ export class RoomsService {
       } = requestWithUser;
       if (!id) return { ok: false, error: '접근 권한을 가지고 있지 않습니다' };
 
-      const currentUser = await this.userRepository.findOne({ id }, { select: ['id', 'roomId', 'host'] });
-      const currnetRoom = await this.roomRepository.findOne({ id: currentUser.roomId }, { relations: ['userList'] });
-      const roomId = currnetRoom.id;
-      if (currnetRoom.userList.length !== 1) return { ok: false };
-      if (currnetRoom.userList.length === 1) {
-        // 방장 권한 삭제
-        currentUser.host = false;
-        const index = currnetRoom.userList.findIndex((user) => user.id === currentUser.id);
-        currnetRoom.userList.splice(index, 1, currentUser);
-        await this.roomRepository.save(currnetRoom);
+      const currentUser = await this.userRepository.findOne({ id });
+      const roomToLeave = await this.roomRepository.findOne({ id: +roomId }, { relations: ['userList'] });
+      let hostNumber: number;
+      let room: Room;
+      switch (currentUser.host) {
+        // 방에서 나가려는 유저가 방장인 경우
+        case true:
+          // 방장의 권한을 삭제하고 userList에서 삭제
+          currentUser.host = false;
+          roomToLeave.currentHeadCount -= 1;
+          await this.userRepository.save(currentUser);
+          hostNumber = roomToLeave.userList.findIndex((user) => user.id === currentUser.id);
 
-        // 방 삭제
-        const result = await this.roomRepository.remove(currnetRoom);
-        if (!result) return { ok: false, error: '방을 삭제하는데 실패하였습니다' };
+          // 다른 사람에게 방장의 권한을 넘겨준다
+          const randomNumber = this.generateRandom(roomToLeave.userList.length, hostNumber);
+          const randomUser = roomToLeave.userList.find((user, index) => index === randomNumber);
+          // console.log(hostNumber, randomNumber);
+          randomUser.host = true;
+          roomToLeave.userList.splice(randomNumber, 1, randomUser);
+          roomToLeave.userList.splice(hostNumber, 1);
+          room = await this.roomRepository.save(roomToLeave);
+          return { ok: true, room };
+        // 방에서 나가려는 유저가 방장이 아닌 경우
+        case false:
+          currentUser.host = false;
+          roomToLeave.currentHeadCount -= 1;
+          hostNumber = roomToLeave.userList.findIndex((user) => user.id === currentUser.id);
+          roomToLeave.userList.splice(hostNumber, 1);
+          room = await this.roomRepository.save(roomToLeave);
+          return { ok: true, room };
+        default:
+          break;
       }
-      return { ok: true, roomId };
     } catch (error) {
       console.log(error);
-      return { ok: false, error: '방을 삭제할 수 없습니다' };
+      return { ok: false, error: '방을 나갈 수 없습니다' };
+    }
+  }
+
+  /* Generate Random Method */
+  generateRandom(max: number, except: number) {
+    for (let index = 0; index < max; index++) {
+      const random = Math.floor(Math.random() * max);
+      if (random === except) {
+        continue;
+      }
+      return random;
     }
   }
 }
