@@ -60,7 +60,7 @@ export class RoomsService {
       } = requestWithUser;
       if (!id) return { ok: false, error: '접근 권한을 가지고 있지 않습니다' };
 
-      const rooms = await this.roomRepository.find();
+      const rooms = await this.roomRepository.find({ relations: ['userList'] });
       return { ok: true, rooms };
     } catch (error) {
       return { ok: false, error: '방들의 정보를 불러올 수 없습니다' };
