@@ -13,4 +13,11 @@ export class RoomsGateway {
   handleGetRooms(@MessageBody() data: Room[], @ConnectedSocket() client: Socket) {
     this.server.emit('rooms:get:client', data);
   }
+
+  // Create Room
+  @SubscribeMessage('rooms:create:server')
+  handleCreateRoom(@MessageBody() data: Room, @ConnectedSocket() client: Socket) {
+    client.join(`${data.id}`);
+    this.server.emit('rooms:create:client', data);
+  }
 }
