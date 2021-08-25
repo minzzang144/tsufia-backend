@@ -187,6 +187,7 @@ export class RoomsService {
       const roomToLeave = await this.roomRepository.findOne({ id: +roomId }, { relations: ['userList'] });
       let hostNumber: number;
       let room: Room;
+      if (roomToLeave.userList.length === 1) return { ok: false };
       switch (currentUser.host) {
         // 방에서 나가려는 유저가 방장인 경우
         case true:

@@ -27,12 +27,29 @@ export class RoomsGateway {
     this.server.emit('rooms:update:client', data);
   }
 
+  // Remove Room
+  @SubscribeMessage('rooms:remove:server')
+  handleRemoveRoom(@MessageBody() data: number, @ConnectedSocket() client: Socket) {
+    console.log(client.rooms);
+    this.server.emit('rooms:remove:client', data);
+    this.server.to(`rooms/${data}`).emit('rooms:remove:each-client');
+    client.leave(`rooms/${data}`);
+  }
+
   // Enter Room
   @SubscribeMessage('rooms:enter:server')
   handleEnterRoom(@MessageBody() data: Room, @ConnectedSocket() client: Socket) {
     client.join(`rooms/${data.id}`);
     this.server.emit('rooms:enter:client', data);
     this.server.to(`rooms/${data.id}`).emit('rooms:enter:each-client', data);
+  }
+
+  // Leave Room
+  @SubscribeMessage('rooms:leave:server')
+  handleLeaveRoom(@MessageBody() data: Room, @ConnectedSocket() client: Socket) {
     console.log(client.rooms);
+    client.leave(`rooms/${data.id}`);
+    this.server.emit('rooms:leave:client', data);
+    this.server.to(`rooms/${data.id}`).emit('rooms:leave:each-client', data);
   }
 }
