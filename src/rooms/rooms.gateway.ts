@@ -20,4 +20,10 @@ export class RoomsGateway {
     client.join(`${data.id}`);
     this.server.emit('rooms:create:client', data);
   }
+
+  // Update Rooms
+  @SubscribeMessage('rooms:update:server')
+  handleUpdateRoom(@MessageBody() data: Room, @ConnectedSocket() client: Socket) {
+    this.server.emit('rooms:update:client', data);
+  }
 }
