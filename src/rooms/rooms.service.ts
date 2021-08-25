@@ -76,7 +76,7 @@ export class RoomsService {
       } = requestWithUser;
       if (!id) return { ok: false, error: '접근 권한을 가지고 있지 않습니다' };
 
-      const room = await this.roomRepository.findOneOrFail({ id: +roomId });
+      const room = await this.roomRepository.findOneOrFail({ id: +roomId }, { relations: ['userList'] });
       if (!room) return { ok: false, error: '방이 삭제 되었거나 정보를 불러올 수 없습니다' };
       return { ok: true, room };
     } catch (error) {
