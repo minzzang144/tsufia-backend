@@ -185,33 +185,33 @@ export class RoomsService {
 
       const currentUser = await this.userRepository.findOne({ id });
       const roomToLeave = await this.roomRepository.findOne({ id: +roomId }, { relations: ['userList'] });
-      let hostNumber: number;
       let room: Room;
       if (roomToLeave.userList.length === 1) return { ok: false };
       switch (currentUser.host) {
         // 방에서 나가려는 유저가 방장인 경우
         case true:
-          // 방장의 권한을 삭제하고 userList에서 삭제
-          currentUser.host = false;
-          roomToLeave.currentHeadCount -= 1;
-          await this.userRepository.save(currentUser);
-          hostNumber = roomToLeave.userList.findIndex((user) => user.id === currentUser.id);
-
-          // 다른 사람에게 방장의 권한을 넘겨준다
+          const hostNumber = roomToLeave.userList.findIndex((user) => user.id === currentUser.id);
           const randomNumber = this.generateRandom(roomToLeave.userList.length, hostNumber);
           const randomUser = roomToLeave.userList.find((user, index) => index === randomNumber);
-          // console.log(hostNumber, randomNumber);
-          randomUser.host = true;
-          roomToLeave.userList.splice(randomNumber, 1, randomUser);
+
+          // 방장을 userList에서 삭제
           roomToLeave.userList.splice(hostNumber, 1);
+          roomToLeave.currentHeadCount -= 1;
+
+          // 다른 사람에게 방장의 권한을 넘겨준다
+          randomUser.host = true;
+          currentUser.host = false;
+          await this.userRepository.save(currentUser);
+          await this.userRepository.save(randomUser);
           room = await this.roomRepository.save(roomToLeave);
           return { ok: true, room };
         // 방에서 나가려는 유저가 방장이 아닌 경우
         case false:
-          currentUser.host = false;
+          const currentNumber = roomToLeave.userList.findIndex((user) => user.id === currentUser.id);
+
+          // 방에서 나가는 유저를 유저리스트에서 제거
+          roomToLeave.userList.splice(currentNumber, 1);
           roomToLeave.currentHeadCount -= 1;
-          hostNumber = roomToLeave.userList.findIndex((user) => user.id === currentUser.id);
-          roomToLeave.userList.splice(hostNumber, 1);
           room = await this.roomRepository.save(roomToLeave);
           return { ok: true, room };
         default:
