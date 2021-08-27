@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { RequestWithUser } from '@common/common.interface';
@@ -9,6 +9,7 @@ import { CreateChatInputDto, CreateChatOutputDto } from '@chats/dtos/create-chat
 export class ChatsController {
   constructor(private readonly chatsService: ChatsService) {}
 
+  /* Create Chats Controller */
   @UseGuards(JwtAuthGuard)
   @Post('create')
   async createChat(
@@ -16,5 +17,12 @@ export class ChatsController {
     @Body() createChatInputDto: CreateChatInputDto,
   ): Promise<CreateChatOutputDto> {
     return this.chatsService.createChat(requestWithUser, createChatInputDto);
+  }
+
+  /* Get Chats Controller */
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async getChats(@Req() requestWithUser: RequestWithUser): Promise<CreateChatOutputDto> {
+    return this.chatsService.getChats(requestWithUser);
   }
 }
