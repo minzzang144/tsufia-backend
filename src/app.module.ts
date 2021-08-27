@@ -10,6 +10,8 @@ import { UsersModule } from '@users/users.module';
 import { User } from '@users/entities/user.entity';
 import { RoomsModule } from '@rooms/rooms.module';
 import { Room } from '@rooms/entities/room.entity';
+import { ChatsModule } from '@chats/chats.module';
+import { Chat } from '@chats/entities/chat.entity';
 
 @Module({
   imports: [
@@ -37,13 +39,14 @@ import { Room } from '@rooms/entities/room.entity';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [User, Room],
+      entities: [User, Room, Chat],
       synchronize: true,
     }),
     AuthModule,
     CommonModule,
     UsersModule,
     RoomsModule,
+    ChatsModule,
   ],
   providers: [AppGateway],
 })
