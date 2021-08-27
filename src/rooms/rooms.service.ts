@@ -225,12 +225,10 @@ export class RoomsService {
 
   /* Generate Random Method */
   generateRandom(max: number, except: number) {
-    for (let index = 0; index < max; index++) {
-      const random = Math.floor(Math.random() * max);
-      if (random === except) {
-        continue;
-      }
-      return random;
+    let random: number = Math.floor(Math.random() * max);
+    while (random === except) {
+      random = Math.floor(Math.random() * max);
     }
+    return random;
   }
 }
