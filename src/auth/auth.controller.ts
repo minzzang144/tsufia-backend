@@ -3,8 +3,8 @@
 import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 
+import { RequestWithUserData } from '@auth/auth.interface';
 import { AuthService } from '@auth/auth.service';
-import { RequestWithUser } from '@auth/auth.interface';
 import { GoogleLoginAuthInputDto, GoogleLoginAuthOutputDto } from '@auth/dtos/google-login-auth.dto';
 import { LoginAuthOutputDto } from '@auth/dtos/login-auth.dto';
 import { KakaoLoginAuthInputDto, KakaoLoginAuthOutputDto } from '@auth/dtos/kakao-login-auth.dto';
@@ -17,7 +17,7 @@ export class AuthController {
   /* Post Login Controller */
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Req() req: RequestWithUser, @Res({ passthrough: true }) res: Response): Promise<LoginAuthOutputDto> {
+  async login(@Req() req: RequestWithUserData, @Res({ passthrough: true }) res: Response): Promise<LoginAuthOutputDto> {
     return this.authService.login(res, req.user);
   }
 

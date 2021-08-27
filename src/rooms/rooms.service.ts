@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { RequestWithUser } from '@rooms/rooms.interface';
+import { RequestWithUser } from '@common/common.interface';
 import { CreateRoomInputDto, CreateRoomOutputDto } from '@rooms/dtos/create-room.dto';
 import { GetRoomsOutputDto } from '@rooms/dtos/get-rooms.dts';
 import { GetRoomOutputDto } from '@rooms/dtos/get-room.dto';

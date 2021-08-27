@@ -2,12 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { RequestWithUser } from '@common/common.interface';
 import { Provider, User } from '@users/entities/user.entity';
 import { CreateUserInputDto, CreateUserOutputDto } from '@users/dtos/create-user.dto';
 import { GetUserInputDto, GetUserOutputDto } from '@users/dtos/get-user.dto';
 import { GetWillPatchUserOutput } from '@users/dtos/get-will-patch-user.dto';
 import { PatchUserInputDto, PatchUserOutputDto } from '@users/dtos/patch-user.dto';
-import { RequestWithUserData } from '@users/users.interface';
 import { PostUserPasswordInputDto, PostUserPasswordOutputDto } from '@users/dtos/post-user-password.dto';
 
 @Injectable()
@@ -36,12 +36,12 @@ export class UsersService {
 
   /* Post User Password Service */
   async postUserPassword(
-    requsetWithUserData: RequestWithUserData,
+    requsetWithUser: RequestWithUser,
     userId: string,
     postUserPasswordInputDto: PostUserPasswordInputDto,
   ): Promise<PostUserPasswordOutputDto> {
     try {
-      const { user } = requsetWithUserData;
+      const { user } = requsetWithUser;
       const { password } = postUserPasswordInputDto;
       const findUser = await this.userRepository.findOne({ id: +userId });
 
@@ -83,9 +83,9 @@ export class UsersService {
   }
 
   /* Get Will Patch User Service */
-  async getWillPatchUser(requsetWithUserData: RequestWithUserData, userId: string): Promise<GetWillPatchUserOutput> {
+  async getWillPatchUser(requsetWithUser: RequestWithUser, userId: string): Promise<GetWillPatchUserOutput> {
     try {
-      const { user } = requsetWithUserData;
+      const { user } = requsetWithUser;
 
       // 유저 인증
       if (user.id !== +userId) return { ok: false, error: '접근 권한을 가지고 있지 않습니다.' };
@@ -98,12 +98,12 @@ export class UsersService {
 
   /* Patch User Service */
   async patchUser(
-    requsetWithUserData: RequestWithUserData,
+    requsetWithUser: RequestWithUser,
     userId: string,
     patchUserInputDto: PatchUserInputDto,
   ): Promise<PatchUserOutputDto> {
     try {
-      const { user } = requsetWithUserData;
+      const { user } = requsetWithUser;
       const { firstName, lastName, password, checkPassword } = patchUserInputDto;
 
       // 유저 인증

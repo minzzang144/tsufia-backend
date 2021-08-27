@@ -1,12 +1,12 @@
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 
+import { RequestWithUser } from '@common/common.interface';
 import { CreateUserInputDto, CreateUserOutputDto } from '@users/dtos/create-user.dto';
 import { UsersService } from '@users/users.service';
 import { GetUserOutputDto } from '@users/dtos/get-user.dto';
 import { GetWillPatchUserOutput } from '@users/dtos/get-will-patch-user.dto';
 import { PatchUserInputDto, PatchUserOutputDto } from '@users/dtos/patch-user.dto';
-import { RequestWithUserData } from '@users/users.interface';
 import { PostUserPasswordInputDto, PostUserPasswordOutputDto } from '@users/dtos/post-user-password.dto';
 
 @Controller('users')
@@ -23,38 +23,38 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Post(':id/validate-password')
   async postUserPassword(
-    @Req() requsetWithUserData: RequestWithUserData,
+    @Req() requsetWithUser: RequestWithUser,
     @Param('id') userId: string,
     @Body() postUserPasswordInputDto: PostUserPasswordInputDto,
   ): Promise<PostUserPasswordOutputDto> {
-    return this.usersService.postUserPassword(requsetWithUserData, userId, postUserPasswordInputDto);
+    return this.usersService.postUserPassword(requsetWithUser, userId, postUserPasswordInputDto);
   }
 
   /* Get User Controller  */
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  async getUser(@Req() requestWithUserData: RequestWithUserData): Promise<GetUserOutputDto> {
-    return this.usersService.getUser({ id: requestWithUserData.user.id });
+  async getUser(@Req() requestWithUser: RequestWithUser): Promise<GetUserOutputDto> {
+    return this.usersService.getUser({ id: requestWithUser.user.id });
   }
 
   /* Get Will Patch User Controller */
   @UseGuards(JwtAuthGuard)
   @Get(':id/profile-update')
   async getWillPatchUser(
-    @Req() requsetWithUserData: RequestWithUserData,
+    @Req() requsetWithUser: RequestWithUser,
     @Param('id') userId: string,
   ): Promise<GetWillPatchUserOutput> {
-    return this.usersService.getWillPatchUser(requsetWithUserData, userId);
+    return this.usersService.getWillPatchUser(requsetWithUser, userId);
   }
 
   /* Patch User Controller */
   @UseGuards(JwtAuthGuard)
   @Patch(':id/profile-update')
   async patchUser(
-    @Req() requsetWithUserData: RequestWithUserData,
+    @Req() requsetWithUser: RequestWithUser,
     @Param('id') userId: string,
     @Body() patchUserInputDto: PatchUserInputDto,
   ): Promise<PatchUserOutputDto> {
-    return this.usersService.patchUser(requsetWithUserData, userId, patchUserInputDto);
+    return this.usersService.patchUser(requsetWithUser, userId, patchUserInputDto);
   }
 }

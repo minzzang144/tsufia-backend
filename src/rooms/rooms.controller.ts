@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
-import { RequestWithUser } from '@rooms/rooms.interface';
+import { RequestWithUser } from '@common/common.interface';
 import { RoomsService } from '@rooms/rooms.service';
 import { CreateRoomInputDto, CreateRoomOutputDto } from '@rooms/dtos/create-room.dto';
 import { PatchRoomInputDto, PatchRoomOutputDto } from '@rooms/dtos/patch-room.dto';

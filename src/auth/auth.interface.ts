@@ -3,7 +3,7 @@ import { Request } from 'express';
 import { ValidateAuthOutputDto } from '@auth/dtos/validate-auth.dto';
 
 /* Local Login Strategy */
-export type RequestWithUser = Request & { user: ValidateAuthOutputDto };
+export type RequestWithUserData = Request & { user: ValidateAuthOutputDto };
 
 /* JWT Strategy */
 export interface Payload {
