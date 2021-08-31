@@ -15,11 +15,17 @@ export class RoomsGateway {
     console.log(this.server.sockets.adapter.rooms);
   }
 
+  // Join Room
+  @SubscribeMessage('rooms:join-room:server')
+  handleJoinOneRoom(@MessageBody() data: string, @ConnectedSocket() client: Socket) {
+    client.join(`rooms/${data}`);
+    console.log(this.server.sockets.adapter.rooms);
+  }
+
   // Create Room
   @SubscribeMessage('rooms:create:server')
   handleCreateRoom(@MessageBody() data: Room, @ConnectedSocket() client: Socket) {
     client.leave('rooms');
-    client.join(`rooms/${data.id}`);
     console.log(this.server.sockets.adapter.rooms);
     this.server.to('rooms').emit('rooms:create:client', data);
   }
@@ -43,7 +49,6 @@ export class RoomsGateway {
   @SubscribeMessage('rooms:enter:server')
   handleEnterRoom(@MessageBody() data: Room, @ConnectedSocket() client: Socket) {
     client.leave('rooms');
-    client.join(`rooms/${data.id}`);
     console.log(this.server.sockets.adapter.rooms);
     this.server.to('rooms').emit('rooms:enter:client', data);
     this.server.to(`rooms/${data.id}`).emit('rooms:enter:each-client', data);
