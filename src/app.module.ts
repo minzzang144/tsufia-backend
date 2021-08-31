@@ -12,6 +12,8 @@ import { RoomsModule } from '@rooms/rooms.module';
 import { Room } from '@rooms/entities/room.entity';
 import { ChatsModule } from '@chats/chats.module';
 import { Chat } from '@chats/entities/chat.entity';
+import { GamesModule } from '@games/games.module';
+import { Game } from '@games/entities/game.entity';
 
 @Module({
   imports: [
@@ -39,7 +41,7 @@ import { Chat } from '@chats/entities/chat.entity';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [User, Room, Chat],
+      entities: [User, Room, Chat, Game],
       synchronize: true,
     }),
     AuthModule,
@@ -47,6 +49,7 @@ import { Chat } from '@chats/entities/chat.entity';
     UsersModule,
     RoomsModule,
     ChatsModule,
+    GamesModule,
   ],
   providers: [AppGateway],
 })

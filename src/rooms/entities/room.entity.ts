@@ -1,9 +1,10 @@
 import { IsEnum, IsNumber, IsString } from 'class-validator';
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
 
 import { Chat } from '@chats/entities/chat.entity';
 import { Core } from '@common/entities/core.entity';
 import { User } from '@users/entities/user.entity';
+import { Game } from '@games/entities/game.entity';
 
 export enum TotalHeadCount {
   Four = 4,
@@ -40,4 +41,7 @@ export class Room extends Core {
 
   @OneToMany(() => Chat, (chat) => chat.room, { cascade: true })
   public chatList: Chat[];
+
+  @OneToOne(() => Game, (game) => game.room, { cascade: true })
+  public game: Game;
 }
