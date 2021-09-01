@@ -4,7 +4,7 @@ import { Server, Socket } from 'socket.io';
 
 import { Room } from '@rooms/entities/room.entity';
 
-@WebSocketGateway(undefined, { cors: { origin: 'http:://localhost:3000', credentials: true } })
+@WebSocketGateway(undefined, { cors: { origin: 'http://localhost:3000', credentials: true } })
 export class RoomsGateway {
   @WebSocketServer() server: Server;
 
@@ -52,6 +52,9 @@ export class RoomsGateway {
     console.log(this.server.sockets.adapter.rooms);
     this.server.to('rooms').emit('rooms:enter:client', data);
     this.server.to(`rooms/${data.id}`).emit('rooms:enter:each-client', data);
+    if (data.currentHeadCount === data.totalHeadCount) {
+      client.emit('games:create:only-self-client');
+    }
   }
 
   // Leave Room
