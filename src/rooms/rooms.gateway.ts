@@ -3,6 +3,7 @@ import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSo
 import { Server, Socket } from 'socket.io';
 
 import { Room } from '@rooms/entities/room.entity';
+import { User } from '@users/entities/user.entity';
 
 @WebSocketGateway(undefined, { cors: { origin: 'http://localhost:3000', credentials: true } })
 export class RoomsGateway {
@@ -47,10 +48,11 @@ export class RoomsGateway {
 
   // Enter Room
   @SubscribeMessage('rooms:enter:server')
-  handleEnterRoom(@MessageBody() data: Room, @ConnectedSocket() client: Socket) {
+  handleEnterRoom(@MessageBody('room') data: Room, @MessageBody('user') user: User, @ConnectedSocket() client: Socket) {
     client.leave('rooms');
     console.log(this.server.sockets.adapter.rooms);
     this.server.to('rooms').emit('rooms:enter:client', data);
+    client.broadcast.to(`rooms/${data.id}`).emit('rooms:enter:broadcast-client', user);
     this.server.to(`rooms/${data.id}`).emit('rooms:enter:each-client', data);
     if (data.currentHeadCount === data.totalHeadCount) {
       client.emit('games:create:only-self-client', data.id);
