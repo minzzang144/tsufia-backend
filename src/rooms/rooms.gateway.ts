@@ -61,10 +61,11 @@ export class RoomsGateway {
 
   // Leave Room
   @SubscribeMessage('rooms:leave:server')
-  handleLeaveRoom(@MessageBody() data: Room, @ConnectedSocket() client: Socket) {
+  handleLeaveRoom(@MessageBody('room') data: Room, @MessageBody('user') user: User, @ConnectedSocket() client: Socket) {
     client.leave(`rooms/${data.id}`);
     console.log(this.server.sockets.adapter.rooms);
     this.server.to('rooms').emit('rooms:leave:client', data);
+    client.broadcast.to(`rooms/${data.id}`).emit('rooms:leave:broadcast-client', user);
     this.server.to(`rooms/${data.id}`).emit('rooms:leave:each-client', data);
   }
 }
