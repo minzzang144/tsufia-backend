@@ -5,7 +5,7 @@ import * as moment from 'moment';
 
 import { RequestWithUser } from '@common/common.interface';
 import { CreateGameOutputDto } from '@games/dtos/create-game.dto';
-import { GetGameInputDto, GetGameOutputDto } from '@games/dtos/get-game.dto';
+import { GetGameOutputDto } from '@games/dtos/get-game.dto';
 import { Circle, Game } from '@games/entities/game.entity';
 import { Room, Status } from '@rooms/entities/room.entity';
 import { User } from '@users/entities/user.entity';
@@ -54,14 +54,13 @@ export class GamesService {
   }
 
   /* Get Game Servecie */
-  async getGame(requestWithUser: RequestWithUser, getGameInputDto: GetGameInputDto): Promise<GetGameOutputDto> {
+  async getGame(requestWithUser: RequestWithUser, id: string): Promise<GetGameOutputDto> {
     try {
       const { ok, error } = this.authUser(requestWithUser);
       if (ok === false && error) return { ok, error };
 
-      const { roomId } = getGameInputDto;
       const game = await this.gameRepository.findOneOrFail(
-        { roomId: +roomId },
+        { id: +id },
         { select: ['id', 'userId', 'roomId', 'circle', 'countDown'] },
       );
       if (!game) return { ok: false, error: '게임을 찾을 수 없습니다' };

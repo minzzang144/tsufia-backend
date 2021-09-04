@@ -165,6 +165,8 @@ export class RoomsService {
           return { ok: true, room: result };
         // 입장하려는 방이 최대인원을 초과한 경우
         case false:
+          if (roomToEnter.userList.some((user) => JSON.stringify(user) === JSON.stringify(currentUser)))
+            return { ok: false };
           return { ok: false, error: '더 이상 입장하실 수 없습니다' };
         default:
           break;
