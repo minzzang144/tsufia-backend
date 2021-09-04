@@ -8,7 +8,11 @@ export class GamesGateway {
   @WebSocketServer() server: Server;
 
   @SubscribeMessage('games:create:server')
-  handleCreateGame(@MessageBody() data: Game, @ConnectedSocket() client: Socket) {
-    this.server.to(`rooms/${data.roomId}`).emit('games:create:each-client', data);
+  handleCreateGame(
+    @MessageBody('game') data: Game,
+    @MessageBody('roomId') roomId: number,
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.server.to(`rooms/${roomId}`).emit('games:create:each-client', data);
   }
 }

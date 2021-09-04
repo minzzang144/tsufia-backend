@@ -53,7 +53,7 @@ export class RoomsGateway {
     this.server.to('rooms').emit('rooms:enter:client', data);
     this.server.to(`rooms/${data.id}`).emit('rooms:enter:each-client', data);
     if (data.currentHeadCount === data.totalHeadCount) {
-      client.emit('games:create:only-self-client');
+      client.emit('games:create:only-self-client', data.id);
     }
   }
 
