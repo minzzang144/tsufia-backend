@@ -9,7 +9,7 @@ import { GetGameOutputDto } from '@games/dtos/get-game.dto';
 import { Circle, Game } from '@games/entities/game.entity';
 import { Room, Status } from '@rooms/entities/room.entity';
 import { User } from '@users/entities/user.entity';
-import { PatchGameInputDto, PatchGameOutputDto } from '@games/dtos/patch-game.dto';
+import { PatchGameOutputDto } from '@games/dtos/patch-game.dto';
 
 @Injectable()
 export class GamesService {
@@ -76,14 +76,13 @@ export class GamesService {
   }
 
   /* Patch Game Service */
-  async patchGame(requestWithUser: RequestWithUser, patchGameInputDto: PatchGameInputDto): Promise<PatchGameOutputDto> {
+  async patchGame(requestWithUser: RequestWithUser, id: string): Promise<PatchGameOutputDto> {
     try {
       const { ok, error } = this.authUser(requestWithUser);
       if (ok === false && error) return { ok, error };
 
-      const { roomId } = patchGameInputDto;
       let game = await this.gameRepository.findOneOrFail(
-        { roomId: +roomId },
+        { id: +id },
         { select: ['id', 'userId', 'roomId', 'circle', 'countDown'] },
       );
       if (!game) return { ok: false, error: '게임을 찾을 수 없습니다' };

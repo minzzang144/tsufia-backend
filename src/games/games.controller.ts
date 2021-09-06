@@ -1,11 +1,11 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { RequestWithUser } from '@common/common.interface';
 import { GamesService } from '@games/games.service';
 import { CreateGameOutputDto } from '@games/dtos/create-game.dto';
 import { GetGameOutputDto } from '@games/dtos/get-game.dto';
-import { PatchGameInputDto, PatchGameOutputDto } from '@games/dtos/patch-game.dto';
+import { PatchGameOutputDto } from '@games/dtos/patch-game.dto';
 
 @Controller('games')
 export class GamesController {
@@ -27,11 +27,8 @@ export class GamesController {
 
   /* Patch Game Controller */
   @UseGuards(JwtAuthGuard)
-  @Patch('update')
-  async patchGame(
-    @Req() requestWithUser: RequestWithUser,
-    @Body() patchGameInputDto: PatchGameInputDto,
-  ): Promise<PatchGameOutputDto> {
-    return this.gamesService.patchGame(requestWithUser, patchGameInputDto);
+  @Patch(':id/update')
+  async patchGame(@Req() requestWithUser: RequestWithUser, @Param('id') id: string): Promise<PatchGameOutputDto> {
+    return this.gamesService.patchGame(requestWithUser, id);
   }
 }
