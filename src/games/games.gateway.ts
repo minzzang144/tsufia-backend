@@ -9,10 +9,28 @@ export class GamesGateway {
 
   @SubscribeMessage('games:create:server')
   handleCreateGame(
-    @MessageBody('game') data: Game,
+    @MessageBody('game') game: Game,
     @MessageBody('roomId') roomId: number,
     @ConnectedSocket() client: Socket,
   ) {
-    this.server.to(`rooms/${roomId}`).emit('games:create:each-client', data);
+    this.server.to(`rooms/${roomId}`).emit('games:create:each-client', game);
+  }
+
+  @SubscribeMessage('games:patch:send-server')
+  handleSendPatchGame(
+    @MessageBody('gameId') gameId: number,
+    @MessageBody('roomId') roomId: number,
+    @ConnectedSocket() client: Socket,
+  ) {
+    client.emit('games:patch:only-self-client', gameId, roomId);
+  }
+
+  @SubscribeMessage('games:patch:server')
+  handlePatchGame(
+    @MessageBody('game') game: Game,
+    @MessageBody('roomId') roomId: number,
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.server.to(`rooms/${roomId}`).emit('games:patch:each-client', game);
   }
 }
