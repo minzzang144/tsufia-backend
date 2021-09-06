@@ -24,6 +24,12 @@ export enum Provider {
   Kakao,
 }
 
+export enum UserRole {
+  Mafia,
+  Citizen,
+  Police,
+}
+
 @Entity()
 export class User extends Core {
   @Column({ unique: true })
@@ -70,20 +76,29 @@ export class User extends Core {
   @JoinColumn({ name: 'roomId' })
   public room: Room;
 
-  @OneToOne(() => Game, (game) => game.user)
-  public game: Game;
-
   @Column({ nullable: true })
   @IsOptional()
   @IsNumber()
   public roomId?: number;
 
+  @OneToOne(() => Game, (game) => game.user)
+  public game: Game;
+
   @Column({ default: false })
   @IsBoolean()
-  host: boolean;
+  public host: boolean;
+
+  @Column({ type: 'enum', enum: UserRole, nullable: true })
+  @IsOptional()
+  public role?: UserRole;
+
+  @Column({ nullable: true })
+  @IsOptional()
+  @IsBoolean()
+  public survive?: boolean;
 
   @OneToMany(() => Chat, (chat) => chat.user)
-  chatList: Chat;
+  public chatList: Chat;
 
   @Exclude({ toPlainOnly: true })
   @IsOptional()
