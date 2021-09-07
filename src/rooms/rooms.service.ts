@@ -240,7 +240,7 @@ export class RoomsService {
       const { ok, error } = this.authUser(requestWithUser);
       if (ok === false && error) return { ok, error };
 
-      const room = await this.roomRepository.findOneOrFail({ id: +roomId }, { relations: ['userList'] });
+      const room = await this.roomRepository.findOneOrFail({ id: +roomId }, { relations: ['userList', 'game'] });
       switch (room.userList.length) {
         case 4:
           const mafiaIndex = this.generateRandom(room.userList.length, []);
