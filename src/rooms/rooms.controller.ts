@@ -70,4 +70,14 @@ export class RoomsAPIController {
   async leaveRoom(@Req() requestWithUser: RequestWithUser, @Param('id') roomId: string): Promise<PatchRoomOutputDto> {
     return this.roomsService.leaveRoom(requestWithUser, roomId);
   }
+
+  /* Create UserRole from Room Userlist API */
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/create/user-role')
+  async createUserRole(
+    @Req() requestWithUser: RequestWithUser,
+    @Param('id') roomId: string,
+  ): Promise<PatchRoomOutputDto> {
+    return this.roomsService.createUserRole(requestWithUser, roomId);
+  }
 }

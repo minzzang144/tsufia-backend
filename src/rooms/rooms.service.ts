@@ -9,7 +9,7 @@ import { GetRoomOutputDto } from '@rooms/dtos/get-room.dto';
 import { PatchRoomInputDto, PatchRoomOutputDto } from '@rooms/dtos/patch-room.dto';
 import { DeleteRoomOutputDto } from '@rooms/dtos/delete-room.dto';
 import { Room, Status } from '@rooms/entities/room.entity';
-import { User } from '@users/entities/user.entity';
+import { User, UserRole } from '@users/entities/user.entity';
 
 @Injectable()
 export class RoomsService {
@@ -18,17 +18,33 @@ export class RoomsService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
+  /* User Authenticate Service */
+  private authUser(requestWithUser: RequestWithUser) {
+    const {
+      user: { id },
+    } = requestWithUser;
+    if (!id) return { ok: false, error: '사용자를 찾을 수 없습니다' };
+    return { id };
+  }
+
+  /* Generate Random Service */
+  private generateRandom(max: number, except: number[]) {
+    let random: number = Math.floor(Math.random() * max);
+    while (except.includes(random)) {
+      random = Math.floor(Math.random() * max);
+    }
+    return random;
+  }
+
   /* Create Room Service */
   async createRoom(
     requestWithUser: RequestWithUser,
     createRoomInputDto: CreateRoomInputDto,
   ): Promise<CreateRoomOutputDto> {
     try {
-      // 사용자 인증 상태 확인
-      const {
-        user: { id },
-      } = requestWithUser;
-      if (!id) return { ok: false, error: '접근 권한을 가지고 있지 않습니다' };
+      const { ok, error, id } = this.authUser(requestWithUser);
+      if (ok === false && error) return { ok, error };
+
       const user = await this.userRepository.findOne({ id }, { select: ['id', 'firstName', 'lastName', 'nickname'] });
       if (!user) return { ok: false, error: '사용자를 찾을 수 없습니다' };
 
@@ -54,11 +70,8 @@ export class RoomsService {
   /* Get Rooms Service */
   async getRooms(requestWithUser: RequestWithUser): Promise<GetRoomsOutputDto> {
     try {
-      // 사용자 인증 상태 확인
-      const {
-        user: { id },
-      } = requestWithUser;
-      if (!id) return { ok: false, error: '접근 권한을 가지고 있지 않습니다' };
+      const { ok, error } = this.authUser(requestWithUser);
+      if (ok === false && error) return { ok, error };
 
       const rooms = await this.roomRepository.find({ relations: ['userList'] });
       return { ok: true, rooms };
@@ -70,11 +83,8 @@ export class RoomsService {
   /* Get Room Service */
   async getRoom(requestWithUser: RequestWithUser, roomId: string): Promise<GetRoomOutputDto> {
     try {
-      // 사용자 인증 상태 확인
-      const {
-        user: { id },
-      } = requestWithUser;
-      if (!id) return { ok: false, error: '접근 권한을 가지고 있지 않습니다' };
+      const { ok, error } = this.authUser(requestWithUser);
+      if (ok === false && error) return { ok, error };
 
       const room = await this.roomRepository.findOneOrFail({ id: +roomId }, { relations: ['userList', 'game'] });
       if (!room) return { ok: false, error: '방이 삭제 되었거나 정보를 불러올 수 없습니다' };
@@ -87,11 +97,8 @@ export class RoomsService {
   /* Patch Room Service */
   async patchRoom(requestWithUser: RequestWithUser, patchRoomInputDto: PatchRoomInputDto): Promise<PatchRoomOutputDto> {
     try {
-      // 사용자 인증 상태 확인
-      const {
-        user: { id },
-      } = requestWithUser;
-      if (!id) return { ok: false, error: '접근 권한을 가지고 있지 않습니다' };
+      const { ok, error, id } = this.authUser(requestWithUser);
+      if (ok === false && error) return { ok, error };
 
       // 방장 여부 확인
       const { title, totalHeadCount } = patchRoomInputDto;
@@ -114,11 +121,8 @@ export class RoomsService {
   /* Delete Room Service */
   async deleteRoom(requestWithUser: RequestWithUser): Promise<DeleteRoomOutputDto> {
     try {
-      // 사용자 인증 상태 확인
-      const {
-        user: { id },
-      } = requestWithUser;
-      if (!id) return { ok: false, error: '접근 권한을 가지고 있지 않습니다' };
+      const { ok, error, id } = this.authUser(requestWithUser);
+      if (ok === false && error) return { ok, error };
 
       const currentUser = await this.userRepository.findOne({ id }, { select: ['id', 'roomId', 'host'] });
       const currnetRoom = await this.roomRepository.findOne({ id: currentUser.roomId }, { relations: ['userList'] });
@@ -127,6 +131,10 @@ export class RoomsService {
       if (currnetRoom.userList.length === 1) {
         // 방장 권한 삭제
         currentUser.host = false;
+
+        // 게임에서 필요한 역할을 회수한다
+        currentUser.role = null;
+
         const index = currnetRoom.userList.findIndex((user) => user.id === currentUser.id);
         currnetRoom.userList.splice(index, 1, currentUser);
         await this.roomRepository.save(currnetRoom);
@@ -144,11 +152,8 @@ export class RoomsService {
   /* Enter Room API Service */
   async enterRoom(requestWithUser: RequestWithUser, roomId: string): Promise<PatchRoomOutputDto> {
     try {
-      // 사용자 인증 상태 확인
-      const {
-        user: { id },
-      } = requestWithUser;
-      if (!id) return { ok: false, error: '접근 권한을 가지고 있지 않습니다' };
+      const { ok, error, id } = this.authUser(requestWithUser);
+      if (ok === false && error) return { ok, error };
 
       const currentUser = await this.userRepository.findOne({ id });
       const roomToEnter = await this.roomRepository.findOne({ id: +roomId }, { relations: ['userList'] });
@@ -179,11 +184,8 @@ export class RoomsService {
   /* Leave Room API Service */
   async leaveRoom(requestWithUser: RequestWithUser, roomId: string): Promise<PatchRoomOutputDto> {
     try {
-      // 사용자 인증 상태 확인
-      const {
-        user: { id },
-      } = requestWithUser;
-      if (!id) return { ok: false, error: '접근 권한을 가지고 있지 않습니다' };
+      const { ok, error, id } = this.authUser(requestWithUser);
+      if (ok === false && error) return { ok, error };
 
       const currentUser = await this.userRepository.findOne({ id });
       const roomToLeave = await this.roomRepository.findOne({ id: +roomId }, { relations: ['userList'] });
@@ -193,7 +195,7 @@ export class RoomsService {
         // 방에서 나가려는 유저가 방장인 경우
         case true:
           const hostNumber = roomToLeave.userList.findIndex((user) => user.id === currentUser.id);
-          const randomNumber = this.generateRandom(roomToLeave.userList.length, hostNumber);
+          const randomNumber = this.generateRandom(roomToLeave.userList.length, [hostNumber]);
           const randomUser = roomToLeave.userList.find((user, index) => index === randomNumber);
 
           // 방장을 userList에서 삭제
@@ -203,6 +205,10 @@ export class RoomsService {
           // 다른 사람에게 방장의 권한을 넘겨준다
           randomUser.host = true;
           currentUser.host = false;
+
+          // 게임에서 필요한 역할을 회수한다
+          currentUser.role = null;
+
           await this.userRepository.save(currentUser);
           await this.userRepository.save(randomUser);
           room = await this.roomRepository.save(roomToLeave);
@@ -214,6 +220,9 @@ export class RoomsService {
           // 방에서 나가는 유저를 유저리스트에서 제거
           roomToLeave.userList.splice(currentNumber, 1);
           roomToLeave.currentHeadCount -= 1;
+          // 게임에서 필요한 역할을 회수한다
+          currentUser.role = null;
+          await this.userRepository.save(currentUser);
           room = await this.roomRepository.save(roomToLeave);
           return { ok: true, room };
         default:
@@ -225,12 +234,36 @@ export class RoomsService {
     }
   }
 
-  /* Generate Random Method */
-  generateRandom(max: number, except: number) {
-    let random: number = Math.floor(Math.random() * max);
-    while (random === except) {
-      random = Math.floor(Math.random() * max);
+  /* Create UserRole from Room Userlist Service */
+  async createUserRole(requestWithUser: RequestWithUser, roomId: string): Promise<PatchRoomOutputDto> {
+    try {
+      const { ok, error } = this.authUser(requestWithUser);
+      if (ok === false && error) return { ok, error };
+
+      const room = await this.roomRepository.findOneOrFail({ id: +roomId }, { relations: ['userList'] });
+      switch (room.userList.length) {
+        case 4:
+          const mafiaIndex = this.generateRandom(room.userList.length, []);
+          room.userList = room.userList.map((user, index) => {
+            if (mafiaIndex === index) {
+              user.role = UserRole.Mafia;
+              user.survive = false;
+              return user;
+            } else {
+              user.role = UserRole.Citizen;
+              user.survive = false;
+              return user;
+            }
+          });
+        default:
+          break;
+      }
+      const patchRoom = await this.roomRepository.save(room);
+      console.log(patchRoom);
+      return { ok: true, room: patchRoom };
+    } catch (error) {
+      console.log(error);
+      return { ok: false, error: '사용자에게 역할을 부여할 수 없습니다' };
     }
-    return random;
   }
 }
