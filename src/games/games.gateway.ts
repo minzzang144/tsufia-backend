@@ -20,17 +20,16 @@ export class GamesGateway {
   }
 
   /* Create Game Event */
-  @SubscribeMessage('games:patch:server')
+  @SubscribeMessage('games:patch:game/1:server')
   handlePatchGame(
     @MessageBody('gameId') gameId: number,
     @MessageBody('roomId') roomId: number,
     @ConnectedSocket() client: Socket,
   ) {
-    client.emit('games:patch:game:only-self-client', gameId, roomId);
-    client.emit('games:patch:user-role:only-self-client', roomId);
+    client.emit('games:patch:game:self-client', gameId, roomId);
   }
 
-  @SubscribeMessage('games:patch:game:server')
+  @SubscribeMessage('games:patch:game/2:server')
   handlePatchRoomGame(
     @MessageBody('game') game: Game,
     @MessageBody('roomId') roomId: number,
@@ -39,7 +38,12 @@ export class GamesGateway {
     this.server.to(`rooms/${roomId}`).emit('games:patch:game:each-client', game);
   }
 
-  @SubscribeMessage('games:patch:user-role:server')
+  @SubscribeMessage('games:patch:user-role/1:server')
+  handleUserRolebyHost(@MessageBody() roomId: number, @ConnectedSocket() client: Socket) {
+    client.emit('games:patch:user-role:self-client', roomId);
+  }
+
+  @SubscribeMessage('games:patch:user-role/2:server')
   handlePatchUserRole(@MessageBody() room: Room, @ConnectedSocket() client: Socket) {
     this.server.to(`rooms/${room.id}`).emit('games:patch:user-role:each-client', room);
   }

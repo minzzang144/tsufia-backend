@@ -259,7 +259,6 @@ export class RoomsService {
           break;
       }
       const patchRoom = await this.roomRepository.save(room);
-      console.log(patchRoom);
       return { ok: true, room: patchRoom };
     } catch (error) {
       console.log(error);
