@@ -5,7 +5,7 @@ import { IsNumber, IsOptional } from 'class-validator';
 import { Room } from '@rooms/entities/room.entity';
 import { User } from '@users/entities/user.entity';
 
-export enum Circle {
+export enum Cycle {
   밤,
   낮,
   저녁,
@@ -13,9 +13,9 @@ export enum Circle {
 
 @Entity()
 export class Game extends Core {
-  @Column({ type: 'enum', enum: Circle, nullable: true })
+  @Column({ type: 'enum', enum: Cycle, nullable: true })
   @IsOptional()
-  public circle?: Circle;
+  public cycle?: Cycle;
 
   @Column()
   @IsNumber()

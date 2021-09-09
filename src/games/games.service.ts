@@ -6,7 +6,7 @@ import * as moment from 'moment';
 import { RequestWithUser } from '@common/common.interface';
 import { CreateGameOutputDto } from '@games/dtos/create-game.dto';
 import { GetGameOutputDto } from '@games/dtos/get-game.dto';
-import { Circle, Game } from '@games/entities/game.entity';
+import { Cycle, Game } from '@games/entities/game.entity';
 import { Room, Status } from '@rooms/entities/room.entity';
 import { User } from '@users/entities/user.entity';
 import { PatchGameOutputDto } from '@games/dtos/patch-game.dto';
@@ -61,7 +61,7 @@ export class GamesService {
 
       const game = await this.gameRepository.findOneOrFail(
         { id: +id },
-        { select: ['id', 'userId', 'roomId', 'circle', 'countDown'] },
+        { select: ['id', 'userId', 'roomId', 'cycle', 'countDown'] },
       );
       if (!game) return { ok: false, error: '게임을 찾을 수 없습니다' };
 
@@ -83,34 +83,34 @@ export class GamesService {
 
       let game = await this.gameRepository.findOneOrFail(
         { id: +id },
-        { select: ['id', 'userId', 'roomId', 'circle', 'countDown'] },
+        { select: ['id', 'userId', 'roomId', 'cycle', 'countDown'] },
       );
       if (!game) return { ok: false, error: '게임을 찾을 수 없습니다' };
 
       let countDown: number;
-      switch (game.circle) {
+      switch (game.cycle) {
         case null:
           countDown = moment().add(15, 'seconds').unix();
           game.countDown = countDown;
-          game.circle = Circle.밤;
+          game.cycle = Cycle.밤;
           game = await this.gameRepository.save(game);
           return { ok: true, game };
-        case Circle.밤:
+        case Cycle.밤:
           countDown = moment().add(30, 'seconds').unix();
           game.countDown = countDown;
-          game.circle = Circle.낮;
+          game.cycle = Cycle.낮;
           game = await this.gameRepository.save(game);
           return { ok: true, game };
-        case Circle.낮:
+        case Cycle.낮:
           countDown = moment().add(15, 'seconds').unix();
           game.countDown = countDown;
-          game.circle = Circle.저녁;
+          game.cycle = Cycle.저녁;
           game = await this.gameRepository.save(game);
           return { ok: true, game };
-        case Circle.저녁:
+        case Cycle.저녁:
           countDown = moment().add(15, 'seconds').unix();
           game.countDown = countDown;
-          game.circle = Circle.밤;
+          game.cycle = Cycle.밤;
           game = await this.gameRepository.save(game);
           return { ok: true, game };
         default:
