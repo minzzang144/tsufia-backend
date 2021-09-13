@@ -286,6 +286,7 @@ export class RoomsService {
         }
         return user;
       });
+      await this.roomRepository.save(room);
       return { ok: true, room };
     } catch (error) {
       console.log(error);
