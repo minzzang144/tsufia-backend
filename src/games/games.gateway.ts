@@ -62,4 +62,20 @@ export class GamesGateway {
   ) {
     this.server.to(`rooms/${roomId}`).emit('games:select:user:each-client', userId, userList);
   }
+
+  /* Patch Survive First Event */
+  @SubscribeMessage('games:patch:survive/1:server')
+  handlePatchSurvive(
+    @MessageBody('roomId') roomId: number,
+    @MessageBody('selectId') selectId: number,
+    @ConnectedSocket() client: Socket,
+  ) {
+    client.emit('games:patch:survive:self-client', roomId, selectId);
+  }
+
+  /* Patch Survive Second Event */
+  @SubscribeMessage('games:patch:survive/2:server')
+  handlePatchSurviveBroadcast(@MessageBody() room: Room | undefined, @ConnectedSocket() client: Socket) {
+    if (room) this.server.to(`rooms/${room.id}`).emit('games:patch:survive:each-client', room);
+  }
 }
