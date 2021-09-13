@@ -6,6 +6,7 @@ import { RoomsService } from '@rooms/rooms.service';
 import { CreateRoomInputDto, CreateRoomOutputDto } from '@rooms/dtos/create-room.dto';
 import { PatchRoomInputDto, PatchRoomOutputDto } from '@rooms/dtos/patch-room.dto';
 import { DeleteRoomOutputDto } from '@rooms/dtos/delete-room.dto';
+import { PatchSurviveInputDto, PatchSurviveOutputDto } from '@rooms/dtos/patch-survive.dto';
 
 @Controller('rooms')
 export class RoomsController {
@@ -79,5 +80,16 @@ export class RoomsAPIController {
     @Param('id') roomId: string,
   ): Promise<PatchRoomOutputDto> {
     return this.roomsService.createUserRole(requestWithUser, roomId);
+  }
+
+  /* Patch Survive from Room Userlist API */
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/patch/survive')
+  async patchSurvive(
+    @Req() requestWithUser: RequestWithUser,
+    @Param('id') roomId: string,
+    @Body() patchSurviveInputDto: PatchSurviveInputDto,
+  ): Promise<PatchSurviveOutputDto> {
+    return this.roomsService.patchSurvive(requestWithUser, roomId, patchSurviveInputDto);
   }
 }

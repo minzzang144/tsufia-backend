@@ -7,6 +7,7 @@ import { CreateRoomInputDto, CreateRoomOutputDto } from '@rooms/dtos/create-room
 import { GetRoomsOutputDto } from '@rooms/dtos/get-rooms.dts';
 import { GetRoomOutputDto } from '@rooms/dtos/get-room.dto';
 import { PatchRoomInputDto, PatchRoomOutputDto } from '@rooms/dtos/patch-room.dto';
+import { PatchSurviveInputDto, PatchSurviveOutputDto } from '@rooms/dtos/patch-survive.dto';
 import { DeleteRoomOutputDto } from '@rooms/dtos/delete-room.dto';
 import { Room, Status } from '@rooms/entities/room.entity';
 import { User, UserRole } from '@users/entities/user.entity';
@@ -247,11 +248,11 @@ export class RoomsService {
           room.userList = room.userList.map((user, index) => {
             if (mafiaIndex === index) {
               user.role = UserRole.Mafia;
-              user.survive = false;
+              user.survive = true;
               return user;
             } else {
               user.role = UserRole.Citizen;
-              user.survive = false;
+              user.survive = true;
               return user;
             }
           });
@@ -263,6 +264,32 @@ export class RoomsService {
     } catch (error) {
       console.log(error);
       return { ok: false, error: '사용자에게 역할을 부여할 수 없습니다' };
+    }
+  }
+
+  async patchSurvive(
+    requestWithUser: RequestWithUser,
+    roomId: string,
+    patchSurviveInputDto: PatchSurviveInputDto,
+  ): Promise<PatchSurviveOutputDto> {
+    try {
+      const { ok, error } = this.authUser(requestWithUser);
+      if (ok === false && error) return { ok, error };
+
+      const { selectId } = patchSurviveInputDto;
+      if (!selectId) return { ok: false };
+      const room = await this.roomRepository.findOneOrFail({ id: +roomId }, { relations: ['userList', 'game'] });
+      room.userList = room.userList.map((user) => {
+        if (user.id === selectId) {
+          user.survive = false;
+          return user;
+        }
+        return user;
+      });
+      return { ok: true, room };
+    } catch (error) {
+      console.log(error);
+      return { ok: false, error: '사용자의 필드를 업데이트 할 수 없습니다' };
     }
   }
 }
