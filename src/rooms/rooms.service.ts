@@ -135,6 +135,7 @@ export class RoomsService {
 
         // 게임에서 필요한 역할을 회수한다
         currentUser.role = null;
+        currentUser.survive = null;
 
         const index = currnetRoom.userList.findIndex((user) => user.id === currentUser.id);
         currnetRoom.userList.splice(index, 1, currentUser);
@@ -207,8 +208,9 @@ export class RoomsService {
           randomUser.host = true;
           currentUser.host = false;
 
-          // 게임에서 필요한 역할을 회수한다
+          // 게임에서 필요한 역할과 생존여부를 회수한다
           currentUser.role = null;
+          currentUser.survive = null;
 
           await this.userRepository.save(currentUser);
           await this.userRepository.save(randomUser);
@@ -221,8 +223,9 @@ export class RoomsService {
           // 방에서 나가는 유저를 유저리스트에서 제거
           roomToLeave.userList.splice(currentNumber, 1);
           roomToLeave.currentHeadCount -= 1;
-          // 게임에서 필요한 역할을 회수한다
+          // 게임에서 필요한 역할과 생존여부를 회수한다
           currentUser.role = null;
+          currentUser.survive = null;
           await this.userRepository.save(currentUser);
           room = await this.roomRepository.save(roomToLeave);
           return { ok: true, room };
