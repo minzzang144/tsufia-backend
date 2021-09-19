@@ -14,6 +14,7 @@ import { ChatsModule } from '@chats/chats.module';
 import { Chat } from '@chats/entities/chat.entity';
 import { GamesModule } from '@games/games.module';
 import { Game } from '@games/entities/game.entity';
+import { RoomsService } from '@rooms/rooms.service';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { Game } from '@games/entities/game.entity';
       entities: [User, Room, Chat, Game],
       synchronize: true,
     }),
+    TypeOrmModule.forFeature([User, Room]),
     AuthModule,
     CommonModule,
     UsersModule,
@@ -51,6 +53,6 @@ import { Game } from '@games/entities/game.entity';
     ChatsModule,
     GamesModule,
   ],
-  providers: [AppGateway],
+  providers: [AppGateway, RoomsService],
 })
 export class AppModule {}
