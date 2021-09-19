@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
-import { RequestWithUser } from '@common/common.interface';
+import { RequestWithUser, RequestWithUserOrId } from '@common/common.interface';
 import { RoomsService } from '@rooms/rooms.service';
 import { CreateRoomInputDto, CreateRoomOutputDto } from '@rooms/dtos/create-room.dto';
 import { PatchRoomInputDto, PatchRoomOutputDto } from '@rooms/dtos/patch-room.dto';
@@ -49,8 +49,8 @@ export class RoomsController {
   /* Delete Room Controller */
   @UseGuards(JwtAuthGuard)
   @Delete('delete')
-  async deleteRoom(@Req() requestWithUser: RequestWithUser): Promise<DeleteRoomOutputDto> {
-    return this.roomsService.deleteRoom(requestWithUser);
+  async deleteRoom(@Req() requestWithUserOrId: RequestWithUserOrId): Promise<DeleteRoomOutputDto> {
+    return this.roomsService.deleteRoom(requestWithUserOrId);
   }
 }
 
@@ -68,8 +68,13 @@ export class RoomsAPIController {
   /* Leave Room API */
   @UseGuards(JwtAuthGuard)
   @Patch(':id/leave')
-  async leaveRoom(@Req() requestWithUser: RequestWithUser, @Param('id') roomId: string): Promise<PatchRoomOutputDto> {
-    return this.roomsService.leaveRoom(requestWithUser, roomId);
+  async leaveRoom(
+    @Req() requestWithUserOrId: RequestWithUserOrId,
+    @Param('id') roomId: string,
+    roomIdPinch: string,
+  ): Promise<PatchRoomOutputDto> {
+    if (roomId) return this.roomsService.leaveRoom(requestWithUserOrId, roomId);
+    return this.roomsService.leaveRoom(requestWithUserOrId, roomIdPinch);
   }
 
   /* Create UserRole from Room Userlist API */

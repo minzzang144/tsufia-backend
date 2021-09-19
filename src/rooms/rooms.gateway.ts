@@ -20,6 +20,7 @@ export class RoomsGateway {
   @SubscribeMessage('rooms:join-room:server')
   handleJoinOneRoom(@MessageBody() data: string, @ConnectedSocket() client: Socket) {
     client.join(`rooms/${data}`);
+    client['roomId'] = data;
     console.log(this.server.sockets.adapter.rooms);
   }
 
@@ -43,6 +44,7 @@ export class RoomsGateway {
   handleRemoveRoom(@MessageBody() data: number, @ConnectedSocket() client: Socket) {
     this.server.to('rooms').emit('rooms:remove:client', data);
     client.leave(`rooms/${data}`);
+    client['roomId'] = undefined;
     console.log(this.server.sockets.adapter.rooms);
   }
 
@@ -63,6 +65,7 @@ export class RoomsGateway {
   @SubscribeMessage('rooms:leave:server')
   handleLeaveRoom(@MessageBody('room') data: Room, @MessageBody('user') user: User, @ConnectedSocket() client: Socket) {
     client.leave(`rooms/${data.id}`);
+    client['roomId'] = undefined;
     console.log(this.server.sockets.adapter.rooms);
     this.server.to('rooms').emit('rooms:leave:client', data);
     client.broadcast.to(`rooms/${data.id}`).emit('rooms:leave:broadcast-client', user);

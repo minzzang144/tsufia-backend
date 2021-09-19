@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { RequestWithUser } from '@common/common.interface';
+import { instanceOfRequestWithUser, RequestWithUser, RequestWithUserOrId } from '@common/common.interface';
 import { CreateRoomInputDto, CreateRoomOutputDto } from '@rooms/dtos/create-room.dto';
 import { GetRoomsOutputDto } from '@rooms/dtos/get-rooms.dts';
 import { GetRoomOutputDto } from '@rooms/dtos/get-room.dto';
@@ -20,10 +20,17 @@ export class RoomsService {
   ) {}
 
   /* User Authenticate Service */
-  private authUser(requestWithUser: RequestWithUser) {
-    const {
-      user: { id },
-    } = requestWithUser;
+  private authUser(requestWithUserOrId: RequestWithUserOrId) {
+    let id: number;
+    if (instanceOfRequestWithUser(requestWithUserOrId)) {
+      const {
+        user: { id: userId },
+      } = requestWithUserOrId;
+      id = userId;
+    } else {
+      const { id: userId } = requestWithUserOrId;
+      id = userId;
+    }
     if (!id) return { ok: false, error: '사용자를 찾을 수 없습니다' };
     return { id };
   }
@@ -120,13 +127,15 @@ export class RoomsService {
   }
 
   /* Delete Room Service */
-  async deleteRoom(requestWithUser: RequestWithUser): Promise<DeleteRoomOutputDto> {
+  async deleteRoom(requestWithUserOrId: RequestWithUserOrId): Promise<DeleteRoomOutputDto> {
     try {
-      const { ok, error, id } = this.authUser(requestWithUser);
+      const { ok, error, id } = this.authUser(requestWithUserOrId);
       if (ok === false && error) return { ok, error };
 
       const currentUser = await this.userRepository.findOne({ id }, { select: ['id', 'roomId', 'host'] });
+      if (!currentUser) return { ok: false };
       const currnetRoom = await this.roomRepository.findOne({ id: currentUser.roomId }, { relations: ['userList'] });
+      if (!currnetRoom) return { ok: false };
       const roomId = currnetRoom.id;
       if (currnetRoom.userList.length !== 1) return { ok: false };
       if (currnetRoom.userList.length === 1) {
@@ -184,13 +193,15 @@ export class RoomsService {
   }
 
   /* Leave Room API Service */
-  async leaveRoom(requestWithUser: RequestWithUser, roomId: string): Promise<PatchRoomOutputDto> {
+  async leaveRoom(requestWithUserOrId: RequestWithUserOrId, roomId: string): Promise<PatchRoomOutputDto> {
     try {
-      const { ok, error, id } = this.authUser(requestWithUser);
+      const { ok, error, id } = this.authUser(requestWithUserOrId);
       if (ok === false && error) return { ok, error };
 
       const currentUser = await this.userRepository.findOne({ id });
+      if (!currentUser) return { ok: false };
       const roomToLeave = await this.roomRepository.findOne({ id: +roomId }, { relations: ['userList'] });
+      if (!roomToLeave) return { ok: false };
       let room: Room;
       if (roomToLeave.userList.length === 1) return { ok: false };
       switch (currentUser.host) {
