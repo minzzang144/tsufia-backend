@@ -8,6 +8,7 @@ import { GetRoomsOutputDto } from '@rooms/dtos/get-rooms.dts';
 import { GetRoomOutputDto } from '@rooms/dtos/get-room.dto';
 import { PatchRoomInputDto, PatchRoomOutputDto } from '@rooms/dtos/patch-room.dto';
 import { PatchSurviveInputDto, PatchSurviveOutputDto } from '@rooms/dtos/patch-survive.dto';
+import { PatchVoteOutputDto } from '@rooms/dtos/patch-vote.dto';
 import { DeleteRoomOutputDto } from '@rooms/dtos/delete-room.dto';
 import { Room, Status } from '@rooms/entities/room.entity';
 import { User, UserRole } from '@users/entities/user.entity';
@@ -281,6 +282,7 @@ export class RoomsService {
     }
   }
 
+  /* Patch Survive Service */
   async patchSurvive(
     requestWithUser: RequestWithUser,
     roomId: string,
@@ -305,6 +307,31 @@ export class RoomsService {
     } catch (error) {
       console.log(error);
       return { ok: false, error: '사용자의 필드를 업데이트 할 수 없습니다' };
+    }
+  }
+
+  /* Patch Vote Service */
+  async patchVote(roomId: number, votedResult: { [index: string]: number }): Promise<PatchVoteOutputDto> {
+    try {
+      const votedArray = Object.values(votedResult);
+      const maxVoteValue = Math.max(...votedArray);
+      const maxVoteKey = Object.keys(votedResult).find((key) => votedResult[key] === maxVoteValue);
+      let room = await this.roomRepository.findOneOrFail({ id: +roomId }, { relations: ['userList', 'game'] });
+      const surviveUserList = room.userList.filter((user) => user.survive === true);
+      if (maxVoteValue >= Math.ceil(surviveUserList.length / 2)) {
+        room.userList = room.userList.map((listUser) => {
+          if (listUser.id === Number(maxVoteKey)) {
+            listUser.survive = false;
+            return listUser;
+          }
+          return listUser;
+        });
+        room = await this.roomRepository.save(room);
+      }
+      return { ok: true, room };
+    } catch (error) {
+      console.log(error);
+      return { ok: false, error: '투표 결과를 확인할 수 없습니다' };
     }
   }
 }
