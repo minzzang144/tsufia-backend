@@ -91,7 +91,7 @@ export class AuthService {
       );
       const loginUser = await this.userRepository.findOneOrFail(+userId);
       if (loginUser.refreshToken !== getRefreshToken) {
-        loginUser.refreshToken = '';
+        res.clearCookie('refreshToken');
         await this.userRepository.save(loginUser);
         return { ok: false, error: '잘못된 접근입니다.' };
       }

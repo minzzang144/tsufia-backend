@@ -20,6 +20,16 @@ export class GamesGateway {
     this.server.to(`rooms/${roomId}`).emit('games:create:each-client', game);
   }
 
+  /* Game CountDown Synchronization */
+  @SubscribeMessage('games:countDown:server')
+  handleCountdown(
+    @MessageBody('roomId') roomId: number,
+    @MessageBody('countDown') countDown: number,
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.server.to(`rooms/${roomId}`).emit('games:countDown:client', countDown);
+  }
+
   /* Patch Game First Event */
   @SubscribeMessage('games:patch:game/1:server')
   handlePatchGame(
@@ -77,5 +87,23 @@ export class GamesGateway {
   @SubscribeMessage('games:patch:survive/2:server')
   handlePatchSurviveBroadcast(@MessageBody() room: Room | undefined, @ConnectedSocket() client: Socket) {
     if (room) this.server.to(`rooms/${room.id}`).emit('games:patch:survive:each-client', room);
+  }
+
+  /* Patch Vote User Event */
+  @SubscribeMessage('games:vote:game:server')
+  handleVote(
+    @MessageBody('roomId') roomId: number,
+    @MessageBody('userId') userId: number,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const result = {};
+    const votedUserList = [];
+    votedUserList.push(userId);
+    votedUserList.forEach((userId) => {
+      if (!userId) return;
+      result[userId] = (result[userId] || 0) + 1;
+    });
+    console.log(votedUserList);
+    console.log(result);
   }
 }
