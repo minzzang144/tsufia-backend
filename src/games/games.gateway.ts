@@ -6,9 +6,11 @@ import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { Game } from '@games/entities/game.entity';
 import { Room } from '@rooms/entities/room.entity';
 import { User } from '@users/entities/user.entity';
+import { RoomsService } from '@rooms/rooms.service';
 
 @WebSocketGateway(undefined, { cors: { origin: 'http://localhost:3000', credentials: true } })
 export class GamesGateway {
+  constructor(private readonly roomsService: RoomsService) {}
   @WebSocketServer() server: Server;
 
   /* Create Game Event */
@@ -105,7 +107,7 @@ export class GamesGateway {
 
   /* Patch Vote User Event */
   @SubscribeMessage('games:patch:vote/2:server')
-  handleVoteBroadcast(
+  async handleVoteBroadcast(
     @MessageBody('roomId') roomId: number,
     @MessageBody('votedUserList') votedUserList: number[],
     @ConnectedSocket() client: Socket,
@@ -115,7 +117,10 @@ export class GamesGateway {
       if (!userId) return;
       result[userId] = (result[userId] || 0) + 1;
     });
-    console.log(result);
-    console.log(votedUserList);
+    const response = await this.roomsService.patchVote(roomId, result);
+    const { ok, room } = response;
+    if (ok && room) {
+      this.server.to(`rooms/${roomId}`).emit('games:patch:vote:each-client', room);
+    }
   }
 }
