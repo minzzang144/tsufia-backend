@@ -28,6 +28,7 @@ export class RoomsGateway {
   @SubscribeMessage('rooms:create:server')
   handleCreateRoom(@MessageBody() data: Room, @ConnectedSocket() client: Socket) {
     client.leave('rooms');
+    client.data.host = true;
     console.log(this.server.sockets.adapter.rooms);
     this.server.to('rooms').emit('rooms:create:client', data);
   }
@@ -45,6 +46,7 @@ export class RoomsGateway {
     this.server.to('rooms').emit('rooms:remove:client', data);
     client.leave(`rooms/${data}`);
     client['roomId'] = undefined;
+    client.data.host = undefined;
     console.log(this.server.sockets.adapter.rooms);
   }
 
@@ -52,6 +54,7 @@ export class RoomsGateway {
   @SubscribeMessage('rooms:enter:server')
   handleEnterRoom(@MessageBody('room') data: Room, @MessageBody('user') user: User, @ConnectedSocket() client: Socket) {
     client.leave('rooms');
+    client.data.host = undefined;
     console.log(this.server.sockets.adapter.rooms);
     this.server.to('rooms').emit('rooms:enter:client', data);
     client.broadcast.to(`rooms/${data.id}`).emit('rooms:enter:broadcast-client', user);

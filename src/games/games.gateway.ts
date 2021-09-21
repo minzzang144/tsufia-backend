@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { RemoteSocket, Server, Socket } from 'socket.io';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 import { Game } from '@games/entities/game.entity';
 import { Room } from '@rooms/entities/room.entity';
@@ -90,20 +91,31 @@ export class GamesGateway {
   }
 
   /* Patch Vote User Event */
-  @SubscribeMessage('games:vote:game:server')
-  handleVote(
+  @SubscribeMessage('games:patch:vote/1:server')
+  async handleVote(
     @MessageBody('roomId') roomId: number,
     @MessageBody('userId') userId: number,
     @ConnectedSocket() client: Socket,
   ) {
-    const result = {};
-    const votedUserList = [];
-    votedUserList.push(userId);
+    // 방장을 찾아 방장에게 투표된 사용자 리스트를 전달한다
+    const fetchSockets = await this.server.in(`rooms/${roomId}`).fetchSockets();
+    const hostSocket = fetchSockets.find((client) => client.data.host === true);
+    this.server.to(hostSocket.id).emit('games:patch:vote:host-client', userId);
+  }
+
+  /* Patch Vote User Event */
+  @SubscribeMessage('games:patch:vote/2:server')
+  handleVoteBroadcast(
+    @MessageBody('roomId') roomId: number,
+    @MessageBody('votedUserList') votedUserList: number[],
+    @ConnectedSocket() client: Socket,
+  ) {
+    const result: { [index: string]: number } = {};
     votedUserList.forEach((userId) => {
       if (!userId) return;
       result[userId] = (result[userId] || 0) + 1;
     });
-    console.log(votedUserList);
     console.log(result);
+    console.log(votedUserList);
   }
 }
