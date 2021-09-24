@@ -305,6 +305,7 @@ export class RoomsService {
 
       let mafiaCount = 0;
       let citizenCount = 0;
+      // 게임 종료 여부 결정
       room.userList.forEach((listUser) => {
         if (listUser.survive && listUser.role === UserRole.Mafia) {
           mafiaCount += 1;
@@ -330,7 +331,10 @@ export class RoomsService {
       const maxVoteKey = Object.keys(votedResult).find((key) => votedResult[key] === maxVoteValue);
       let room = await this.roomRepository.findOneOrFail({ id: +roomId }, { relations: ['userList', 'game'] });
       const surviveUserList = room.userList.filter((user) => user.survive === true);
+      let mafiaCount = 0;
+      let citizenCount = 0;
       if (maxVoteValue >= Math.ceil(surviveUserList.length / 2)) {
+        // 과반수를 넘으면 탈락
         room.userList = room.userList.map((listUser) => {
           if (listUser.id === Number(maxVoteKey)) {
             listUser.survive = false;
@@ -338,6 +342,18 @@ export class RoomsService {
           }
           return listUser;
         });
+
+        // 게임 종료 여부 결정
+        room.userList.forEach((listUser) => {
+          if (listUser.survive && listUser.role === UserRole.Mafia) {
+            mafiaCount += 1;
+          }
+          if (listUser.survive && listUser.role !== UserRole.Mafia) {
+            citizenCount += 1;
+          }
+        });
+        if (mafiaCount === 0) room.status = Status.종료;
+        if (mafiaCount >= citizenCount) room.status = Status.종료;
         room = await this.roomRepository.save(room);
       }
       return { ok: true, room };
