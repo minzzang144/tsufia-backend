@@ -302,6 +302,18 @@ export class RoomsService {
         }
         return user;
       });
+
+      let mafiaCount = 0;
+      let citizenCount = 0;
+      room.userList.forEach((listUser) => {
+        if (listUser.survive && listUser.role === UserRole.Mafia) {
+          mafiaCount += 1;
+        }
+        if (listUser.survive && listUser.role !== UserRole.Mafia) {
+          citizenCount += 1;
+        }
+      });
+      if (mafiaCount >= citizenCount) room.status = Status.종료;
       await this.roomRepository.save(room);
       return { ok: true, room };
     } catch (error) {

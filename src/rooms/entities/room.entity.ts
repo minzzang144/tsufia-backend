@@ -15,6 +15,7 @@ export enum TotalHeadCount {
 export enum Status {
   대기중,
   진행중,
+  종료,
 }
 
 @Entity()
