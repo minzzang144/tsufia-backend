@@ -168,14 +168,13 @@ export class RoomsService {
       if (ok === false && error) return { ok, error };
 
       const currentUser = await this.userRepository.findOne({ id });
-      const roomToEnter = await this.roomRepository.findOne({ id: +roomId }, { relations: ['userList'] });
+      const roomToEnter = await this.roomRepository.findOne({ id: +roomId }, { relations: ['userList', 'game'] });
 
       switch (roomToEnter.currentHeadCount < roomToEnter.totalHeadCount) {
         // 입장하려는 방이 최대인원을 초과하지 않은 경우
         case true:
           // 방장인 경우 Create Room에서 userList에 추가하였기 때문에 enterRoom 메서드를 종료한다
           if (roomToEnter.userList.find((user) => user.id === currentUser.id)) return { ok: false };
-
           roomToEnter.currentHeadCount += 1;
           roomToEnter.userList.push(currentUser);
           const result = await this.roomRepository.save(roomToEnter);

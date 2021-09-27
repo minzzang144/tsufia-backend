@@ -54,12 +54,11 @@ export class RoomsGateway {
   @SubscribeMessage('rooms:enter:server')
   handleEnterRoom(@MessageBody('room') data: Room, @MessageBody('user') user: User, @ConnectedSocket() client: Socket) {
     client.leave('rooms');
-    client.data.host = undefined;
     console.log(this.server.sockets.adapter.rooms);
     this.server.to('rooms').emit('rooms:enter:client', data);
     client.broadcast.to(`rooms/${data.id}`).emit('rooms:enter:broadcast-client', user);
     this.server.to(`rooms/${data.id}`).emit('rooms:enter:each-client', data);
-    if (data.currentHeadCount === data.totalHeadCount) {
+    if (data.currentHeadCount === data.totalHeadCount && !data.game) {
       client.emit('games:create:only-self-client', data.id);
     }
   }
@@ -69,6 +68,7 @@ export class RoomsGateway {
   handleLeaveRoom(@MessageBody('room') data: Room, @MessageBody('user') user: User, @ConnectedSocket() client: Socket) {
     client.leave(`rooms/${data.id}`);
     client['roomId'] = undefined;
+    client.data.host = undefined;
     console.log(this.server.sockets.adapter.rooms);
     this.server.to('rooms').emit('rooms:leave:client', data);
     client.broadcast.to(`rooms/${data.id}`).emit('rooms:leave:broadcast-client', user);
