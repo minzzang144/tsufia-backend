@@ -42,8 +42,9 @@ export class ChatsService {
       if (!user) return { ok: false, error: '사용자를 찾을 수 없습니다' };
       createChat.user = user;
 
-      const room = await this.roomRepository.findOneOrFail({ id: user.roomId });
+      const room = await this.roomRepository.findOneOrFail({ id: user.roomId }, { relations: ['game'] });
       if (!room) return { ok: false, error: '사용자가 소속된 방을 찾을 수 없습니다' };
+      createChat.cycle = room.game?.cycle;
       createChat.room = room;
       const chat = await this.chatRepository.save(createChat);
 
