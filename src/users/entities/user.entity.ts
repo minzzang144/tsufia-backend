@@ -1,22 +1,11 @@
 import * as bcrypt from 'bcrypt';
 import { classToPlain, Exclude } from 'class-transformer';
 import { IsBoolean, IsEmail, IsNumber, IsOptional, IsString } from 'class-validator';
-import {
-  AfterLoad,
-  BeforeInsert,
-  BeforeUpdate,
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-} from 'typeorm';
+import { AfterLoad, BeforeInsert, BeforeUpdate, Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 
 import { Core } from '@common/entities/core.entity';
 import { Room } from '@rooms/entities/room.entity';
 import { Chat } from '@chats/entities/chat.entity';
-import { Game } from '@games/entities/game.entity';
 
 export enum Provider {
   Local,
@@ -80,9 +69,6 @@ export class User extends Core {
   @IsOptional()
   @IsNumber()
   public roomId?: number;
-
-  @OneToOne(() => Game, (game) => game.user)
-  public game: Game;
 
   @Column({ default: false })
   @IsBoolean()

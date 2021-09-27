@@ -43,7 +43,6 @@ export class GamesService {
       const newGame = this.gameRepository.create({ countDown });
       room.status = Status.진행중;
       newGame.room = room;
-      newGame.user = user;
       const game = await this.gameRepository.save(newGame);
       await this.roomRepository.save(room);
       return { ok: true, game };
@@ -61,7 +60,7 @@ export class GamesService {
 
       const game = await this.gameRepository.findOneOrFail(
         { id: +id },
-        { select: ['id', 'userId', 'roomId', 'cycle', 'countDown'] },
+        { select: ['id', 'roomId', 'cycle', 'countDown'] },
       );
       if (!game) return { ok: false, error: '게임을 찾을 수 없습니다' };
 
@@ -83,7 +82,7 @@ export class GamesService {
 
       let game = await this.gameRepository.findOneOrFail(
         { id: +id },
-        { select: ['id', 'userId', 'roomId', 'cycle', 'countDown'] },
+        { select: ['id', 'roomId', 'cycle', 'countDown'] },
       );
       if (!game) return { ok: false, error: '게임을 찾을 수 없습니다' };
 

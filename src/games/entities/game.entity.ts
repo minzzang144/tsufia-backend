@@ -3,7 +3,6 @@ import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { Core } from '@common/entities/core.entity';
 import { IsNumber, IsOptional } from 'class-validator';
 import { Room } from '@rooms/entities/room.entity';
-import { User } from '@users/entities/user.entity';
 
 export enum Cycle {
   밤,
@@ -30,13 +29,4 @@ export class Game extends Core {
   @IsOptional()
   @IsNumber()
   public roomId?: number;
-
-  @OneToOne(() => User, (user) => user.game)
-  @JoinColumn({ name: 'userId' })
-  public user: User;
-
-  @Column({ nullable: true })
-  @IsOptional()
-  @IsNumber()
-  public userId?: number;
 }
