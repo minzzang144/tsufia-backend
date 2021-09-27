@@ -4,12 +4,17 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { Core } from '@common/entities/core.entity';
 import { User } from '@users/entities/user.entity';
 import { Room } from '@rooms/entities/room.entity';
+import { Cycle } from '@games/entities/game.entity';
 
 @Entity()
 export class Chat extends Core {
   @Column()
   @IsString()
   public content: string;
+
+  @Column({ type: 'enum', enum: Cycle, nullable: true })
+  @IsOptional()
+  public cycle?: Cycle;
 
   @ManyToOne(() => Room, (room) => room.chatList, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'roomId' })
