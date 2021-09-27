@@ -33,6 +33,13 @@ export class RoomsGateway {
     this.server.to('rooms').emit('rooms:create:client', data);
   }
 
+  // Get Room
+  @SubscribeMessage('rooms:get:server')
+  handleGetRoom(@MessageBody('room') room: Room, @MessageBody('user') user: User, @ConnectedSocket() client: Socket) {
+    const currentUser = room.userList.find((listUser) => listUser.id === user.id);
+    if (currentUser && currentUser.host) client.data.host = true;
+  }
+
   // Update Rooms
   @SubscribeMessage('rooms:update:server')
   handleUpdateRoom(@MessageBody() data: Room, @ConnectedSocket() client: Socket) {
