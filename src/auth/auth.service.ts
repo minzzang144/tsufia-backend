@@ -6,8 +6,10 @@ import * as jwt from 'jsonwebtoken';
 import { GoogleLoginAuthInputDto, GoogleLoginAuthOutputDto } from '@auth/dtos/google-login-auth.dto';
 import { KakaoLoginAuthInputDto, KakaoLoginAuthOutputDto } from '@auth/dtos/kakao-login-auth.dto';
 import { LoginAuthInputDto, LoginAuthOutputDto } from '@auth/dtos/login-auth.dto';
+import { LogoutAuthOutputDto } from '@auth/dtos/logout.dto';
 import { SilentRefreshAuthOutputDto } from '@auth/dtos/silent-refresh-auth.dto';
 import { ValidateAuthInputDto, ValidateAuthOutputDto } from '@auth/dtos/validate-auth.dto';
+import { RequestWithUser } from '@common/common.interface';
 import { UsersService } from '@users/users.service';
 import { Provider } from '@users/entities/user.entity';
 import { UserRepository } from '@users/repositories/user.repository';
@@ -71,6 +73,26 @@ export class AuthService {
       };
     } catch (error) {
       return { ok: false, error: '로그인 인증에 실패하였습니다.' };
+    }
+  }
+
+  /* Logout Service */
+  async logout(requestWithUser: RequestWithUser, res: Response): Promise<LogoutAuthOutputDto> {
+    try {
+      const {
+        user: { id },
+      } = requestWithUser;
+      if (!id) return { ok: false, error: '접근 권한을 가지고 있지 않습니다' };
+
+      const loginUser = await this.userRepository.findOneOrFail(id);
+      loginUser.refreshToken = null;
+      await this.userRepository.save(loginUser);
+
+      res.clearCookie('refreshToken');
+      return { ok: true };
+    } catch (error) {
+      console.log(error);
+      return { ok: false, error: '로그아웃을 실패하였습니다' };
     }
   }
 
