@@ -45,7 +45,7 @@ import { RoomsService } from '@rooms/rooms.service';
       entities: [User, Room, Chat, Game],
       synchronize: true,
     }),
-    TypeOrmModule.forFeature([User, Room]),
+    TypeOrmModule.forFeature([User, Room, Game]),
     AuthModule,
     CommonModule,
     UsersModule,

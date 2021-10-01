@@ -10,6 +10,7 @@ import { PatchRoomInputDto, PatchRoomOutputDto } from '@rooms/dtos/patch-room.dt
 import { PatchSurviveInputDto, PatchSurviveOutputDto } from '@rooms/dtos/patch-survive.dto';
 import { PatchVoteOutputDto } from '@rooms/dtos/patch-vote.dto';
 import { DeleteRoomOutputDto } from '@rooms/dtos/delete-room.dto';
+import { Game } from '@games/entities/game.entity';
 import { Room, Status } from '@rooms/entities/room.entity';
 import { User, UserRole } from '@users/entities/user.entity';
 
@@ -18,6 +19,7 @@ export class RoomsService {
   constructor(
     @InjectRepository(Room) private readonly roomRepository: Repository<Room>,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(Game) private readonly gameRepository: Repository<Game>,
   ) {}
 
   /* User Authenticate Service */
@@ -200,8 +202,12 @@ export class RoomsService {
 
       const currentUser = await this.userRepository.findOne({ id });
       if (!currentUser) return { ok: false };
-      const roomToLeave = await this.roomRepository.findOne({ id: +roomId }, { relations: ['userList'] });
+      const roomToLeave = await this.roomRepository.findOne({ id: +roomId }, { relations: ['userList', 'game'] });
       if (!roomToLeave) return { ok: false };
+      if (roomToLeave.game) {
+        await this.gameRepository.remove(roomToLeave.game);
+        roomToLeave.game = null;
+      }
       let room: Room;
       if (roomToLeave.userList.length === 1) return { ok: false };
       switch (currentUser.host) {
