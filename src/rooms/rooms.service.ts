@@ -204,10 +204,21 @@ export class RoomsService {
       if (!currentUser) return { ok: false };
       const roomToLeave = await this.roomRepository.findOne({ id: +roomId }, { relations: ['userList', 'game'] });
       if (!roomToLeave) return { ok: false };
+
+      // 게임 삭제
       if (roomToLeave.game) {
         await this.gameRepository.remove(roomToLeave.game);
         roomToLeave.game = null;
+        roomToLeave.userList = roomToLeave.userList.map((listUser) => {
+          if (listUser.id !== currentUser.id) {
+            // 유저 역할 & 생사 필드 초기화
+            listUser.role = null;
+            listUser.survive = null;
+          }
+          return listUser;
+        });
       }
+
       let room: Room;
       if (roomToLeave.userList.length === 1) return { ok: false };
       switch (currentUser.host) {
