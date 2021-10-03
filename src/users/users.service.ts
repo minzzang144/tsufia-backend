@@ -110,15 +110,15 @@ export class UsersService {
       if (user.id != +userId) return { ok: false, error: '접근 권한을 가지고 있지 않습니다.' };
 
       // 유저 업데이트
-      const patchUser = await this.userRepository.findOne({ id: user.id });
+      let patchUser = await this.userRepository.findOne({ id: user.id });
       if (firstName) patchUser.firstName = firstName;
       if (lastName) patchUser.lastName = lastName;
       if (password && !checkPassword) return { ok: false, error: '패스워드 확인이 필요합니다.' };
       if (password && checkPassword && password !== checkPassword)
         return { ok: false, error: '패스워드가 일치하지 않습니다.' };
       if (password && checkPassword && password === checkPassword) patchUser.password = password;
-      await this.userRepository.save(patchUser);
-      return { ok: true };
+      patchUser = await this.userRepository.save(patchUser);
+      return { ok: true, user: patchUser };
     } catch (error) {
       return { ok: false, error: '유저 업데이트를 실패 하였습니다.' };
     }

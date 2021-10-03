@@ -9,4 +9,6 @@ export class PatchUserInputDto extends PartialType(PickType(User, ['firstName', 
   checkPassword?: string;
 }
 
-export class PatchUserOutputDto extends CoreOutput {}
+export class PatchUserOutputDto extends CoreOutput {
+  user?: User;
+}
