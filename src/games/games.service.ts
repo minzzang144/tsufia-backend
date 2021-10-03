@@ -7,7 +7,7 @@ import { RequestWithUser } from '@common/common.interface';
 import { CreateGameOutputDto } from '@games/dtos/create-game.dto';
 import { GetGameOutputDto } from '@games/dtos/get-game.dto';
 import { Cycle, Game } from '@games/entities/game.entity';
-import { Room, Status } from '@rooms/entities/room.entity';
+import { Room } from '@rooms/entities/room.entity';
 import { User } from '@users/entities/user.entity';
 import { PatchGameOutputDto } from '@games/dtos/patch-game.dto';
 
@@ -41,7 +41,6 @@ export class GamesService {
 
       const countDown = moment().add(10, 'seconds').unix();
       const newGame = this.gameRepository.create({ countDown });
-      room.status = Status.진행중;
       newGame.room = room;
       const game = await this.gameRepository.save(newGame);
       await this.roomRepository.save(room);

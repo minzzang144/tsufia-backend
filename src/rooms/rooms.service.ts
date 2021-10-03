@@ -179,6 +179,7 @@ export class RoomsService {
           if (roomToEnter.userList.find((user) => user.id === currentUser.id)) return { ok: false };
           roomToEnter.currentHeadCount += 1;
           roomToEnter.userList.push(currentUser);
+          if (roomToEnter.currentHeadCount === roomToEnter.totalHeadCount) roomToEnter.status = Status.진행중;
           const result = await this.roomRepository.save(roomToEnter);
           return { ok: true, room: result };
         // 입장하려는 방이 최대인원을 초과한 경우
@@ -208,6 +209,7 @@ export class RoomsService {
       // 게임 삭제
       if (roomToLeave.game) {
         await this.gameRepository.remove(roomToLeave.game);
+        roomToLeave.status = Status.대기중;
         roomToLeave.game = null;
         roomToLeave.userList = roomToLeave.userList.map((listUser) => {
           if (listUser.id !== currentUser.id) {

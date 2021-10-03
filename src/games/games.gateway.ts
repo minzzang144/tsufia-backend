@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { RemoteSocket, Server, Socket } from 'socket.io';
-import { DefaultEventsMap } from 'socket.io/dist/typed-events';
+import { Server, Socket } from 'socket.io';
 
 import { Game } from '@games/entities/game.entity';
-import { Room } from '@rooms/entities/room.entity';
+import { Room, Status } from '@rooms/entities/room.entity';
 import { User } from '@users/entities/user.entity';
 import { RoomsService } from '@rooms/rooms.service';
 
@@ -89,7 +88,10 @@ export class GamesGateway {
   /* Patch Survive Second Event */
   @SubscribeMessage('games:patch:survive/2:server')
   handlePatchSurviveBroadcast(@MessageBody() room: Room | undefined, @ConnectedSocket() client: Socket) {
-    if (room) this.server.to(`rooms/${room.id}`).emit('games:patch:survive:each-client', room);
+    if (room) {
+      this.server.to(`rooms/${room.id}`).emit('games:patch:survive:each-client', room);
+      if (room.status === Status.종료) this.server.to(`room`).emit('games:patch:status:client', room);
+    }
   }
 
   /* Patch Vote User Event */
@@ -121,6 +123,7 @@ export class GamesGateway {
     const { ok, room } = response;
     if (ok && room) {
       this.server.to(`rooms/${roomId}`).emit('games:patch:vote:each-client', room);
+      if (room.status === Status.종료) this.server.to(`rooms`).emit('games:patch:status:client', room);
     }
   }
 }
