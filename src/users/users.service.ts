@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Response } from 'express';
+import * as jwt from 'jsonwebtoken';
 import { Repository } from 'typeorm';
 
 import { RequestWithUser } from '@common/common.interface';
@@ -62,11 +63,24 @@ export class UsersService {
         return { ok: false, error: '패스워드를 틀렸습니다. 다시 입력해주세요' };
 
       // 쿠키 설정
+      const verification = jwt.sign(
+        { verification: true },
+        this.configService.get('VERIFYCATION_EXPIRATION_SECRET_KEY'),
+        {
+          expiresIn: this.configService.get('VERIFYCATION_EXPIRATION_TIME'),
+        },
+      );
       const now = new Date();
-      now.setHours(now.getHours() + +this.configService.get('VERIFYCATION_EXPIRATION_TIME'));
-      res.cookie('verification', true, { expires: now, httpOnly: true });
+      now.setHours(now.getHours() + +this.configService.get('VERIFYCATION_EXPIRATION_HOUR'));
+      res.cookie('verification', verification, {
+        expires: now,
+        httpOnly: true,
+        secure: process.env.NODE_ENV !== 'development',
+        sameSite: true,
+      });
       return { ok: true };
     } catch (error) {
+      console.log(error);
       return { ok: false, error: '올바른 패스워드를 입력 하십시오.' };
     }
   }
@@ -97,13 +111,27 @@ export class UsersService {
   /* Get Will Patch User Service */
   async getWillPatchUser(requsetWithUser: RequestWithUser, userId: string): Promise<GetWillPatchUserOutput> {
     try {
-      const { user } = requsetWithUser;
+      const { user, cookies } = requsetWithUser;
+      const verification = cookies['verification'];
+      let verificationPass: string | string[] | undefined;
 
+      // Verification 인증
+      if (verification) {
+        jwt.verify(
+          verification,
+          this.configService.get('VERIFYCATION_EXPIRATION_SECRET_KEY'),
+          (err: jwt.VerifyErrors | null, decoded: jwt.JwtPayload | undefined) => {
+            if (err) throw new UnauthorizedException();
+            verificationPass = decoded.verification;
+          },
+        );
+      }
       // 유저 인증
-      if (user.id !== +userId) return { ok: false, error: '접근 권한을 가지고 있지 않습니다.' };
-      const willPatchUser = await this.userRepository.findOne({ id: user.id });
-      return { ok: true, user: willPatchUser };
+      if (!verificationPass) return { ok: false, error: '패스워드 검증을 먼저 진행해주세요' };
+      if (user.id !== userId) return { ok: false, error: '접근 권한을 가지고 있지 않습니다.' };
+      return { ok: true };
     } catch (error) {
+      console.log(error);
       return { ok: false, error: '접근 권한을 가지고 있지 않습니다.' };
     }
   }
