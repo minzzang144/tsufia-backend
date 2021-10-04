@@ -71,7 +71,7 @@ export class UsersService {
         },
       );
       const now = new Date();
-      now.setHours(now.getHours() + +this.configService.get('VERIFYCATION_EXPIRATION_HOUR'));
+      now.setHours(now.getHours() + +this.configService.get('VERIFYCATION_EXPIRATION_DATE'));
       res.cookie('verification', verification, {
         expires: now,
         httpOnly: true,

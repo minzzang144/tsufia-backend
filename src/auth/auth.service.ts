@@ -63,9 +63,13 @@ export class AuthService {
       await this.userRepository.save(loginUser);
 
       // 쿠키 설정
+      const now = new Date();
+      now.setDate(now.getDate() + +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_DATE'));
       res.cookie('refreshToken', refreshToken, {
-        expires: new Date(Date.now() + this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')),
+        expires: now,
         httpOnly: true,
+        secure: process.env.NODE_ENV !== 'development',
+        sameSite: true,
       });
       return {
         ok: true,
@@ -133,9 +137,13 @@ export class AuthService {
       await this.userRepository.save(loginUser);
 
       // 쿠키 설정
+      const now = new Date();
+      now.setDate(now.getDate() + +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_DATE'));
       res.cookie('refreshToken', refreshToken, {
-        expires: new Date(Date.now() + this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')),
+        expires: now,
         httpOnly: true,
+        secure: process.env.NODE_ENV !== 'development',
+        sameSite: true,
       });
       return {
         ok: true,
@@ -178,9 +186,13 @@ export class AuthService {
       await this.userRepository.save(findUser);
 
       // 쿠키 설정
+      const now = new Date();
+      now.setDate(now.getDate() + +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_DATE'));
       res.cookie('refreshToken', refreshToken, {
-        expires: new Date(Date.now() + this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')),
+        expires: now,
         httpOnly: true,
+        secure: process.env.NODE_ENV !== 'development',
+        sameSite: true,
       });
       return {
         ok: true,
@@ -219,9 +231,13 @@ export class AuthService {
       await this.userRepository.save(findUser);
 
       // 쿠키 설정
+      const now = new Date();
+      now.setDate(now.getDate() + +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_DATE'));
       res.cookie('refreshToken', refreshToken, {
-        expires: new Date(Date.now() + this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')),
+        expires: now,
         httpOnly: true,
+        secure: process.env.NODE_ENV !== 'development',
+        sameSite: true,
       });
       return {
         ok: true,
