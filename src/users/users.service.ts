@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Response } from 'express';
 import { Repository } from 'typeorm';
 
 import { RequestWithUser } from '@common/common.interface';
@@ -9,10 +10,14 @@ import { GetUserInputDto, GetUserOutputDto } from '@users/dtos/get-user.dto';
 import { GetWillPatchUserOutput } from '@users/dtos/get-will-patch-user.dto';
 import { PatchUserInputDto, PatchUserOutputDto } from '@users/dtos/patch-user.dto';
 import { PostUserPasswordInputDto, PostUserPasswordOutputDto } from '@users/dtos/post-user-password.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private readonly userRepository: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    private readonly configService: ConfigService,
+  ) {}
 
   /* Create User Service */
   async createUser(createUserInputDto: CreateUserInputDto): Promise<CreateUserOutputDto> {
@@ -39,6 +44,7 @@ export class UsersService {
     requsetWithUser: RequestWithUser,
     userId: string,
     postUserPasswordInputDto: PostUserPasswordInputDto,
+    res: Response,
   ): Promise<PostUserPasswordOutputDto> {
     try {
       const { user } = requsetWithUser;
@@ -53,6 +59,11 @@ export class UsersService {
       if (!password) return { ok: false, error: '패스워드를 입력해주세요.' };
       if (!(await findUser.validatePassword(password)))
         return { ok: false, error: '패스워드를 틀렸습니다. 다시 입력해주세요' };
+
+      // 쿠키 설정
+      const now = new Date();
+      now.setHours(now.getHours() + +this.configService.get('VERIFYCATION_EXPIRATION_TIME'));
+      res.cookie('verification', true, { expires: now, httpOnly: true });
       return { ok: true };
     } catch (error) {
       return { ok: false, error: '올바른 패스워드를 입력 하십시오.' };

@@ -1,5 +1,6 @@
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
-import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Response } from 'express';
 
 import { RequestWithUser } from '@common/common.interface';
 import { CreateUserInputDto, CreateUserOutputDto } from '@users/dtos/create-user.dto';
@@ -26,8 +27,9 @@ export class UsersController {
     @Req() requsetWithUser: RequestWithUser,
     @Param('id') userId: string,
     @Body() postUserPasswordInputDto: PostUserPasswordInputDto,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<PostUserPasswordOutputDto> {
-    return this.usersService.postUserPassword(requsetWithUser, userId, postUserPasswordInputDto);
+    return this.usersService.postUserPassword(requsetWithUser, userId, postUserPasswordInputDto, res);
   }
 
   /* Get User Controller  */
