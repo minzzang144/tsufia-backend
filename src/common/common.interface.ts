@@ -1,6 +1,6 @@
 import { Request } from 'express';
 
-export type UserWithId = { id: number };
+export type UserWithId = { id: string };
 
 export type RequestWithUser = Request & { user: UserWithId };
 

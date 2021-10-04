@@ -36,7 +36,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   async getUser(@Req() requestWithUser: RequestWithUser): Promise<GetUserOutputDto> {
-    return this.usersService.getUser({ id: requestWithUser.user.id });
+    return this.usersService.getUser({ id: +requestWithUser.user.id });
   }
 
   /* Get Will Patch User Controller */

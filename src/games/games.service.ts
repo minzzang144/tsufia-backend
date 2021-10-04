@@ -25,7 +25,7 @@ export class GamesService {
       user: { id },
     } = requestWithUser;
     if (!id) return { ok: false, error: '사용자를 찾을 수 없습니다' };
-    return { id };
+    return { id: +id };
   }
 
   /* Create Game Service */

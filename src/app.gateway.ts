@@ -41,12 +41,12 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
       // Room 안이 아닌 밖에서 disconnect되면 reconnect 관계 여부 없이 방을 삭제
       if (this.reconnected === false) {
         if (client['roomId']) {
-          const deleteResponse = await this.roomService.deleteRoom({ id: +client.data.user.id });
+          const deleteResponse = await this.roomService.deleteRoom({ id: client.data.user.id });
           const { ok: deleteOk, roomId } = deleteResponse;
           if (deleteOk) {
             this.server.to('rooms').emit('rooms:remove:client', roomId);
           }
-          const leaveResponse = await this.roomService.leaveRoom({ id: +client.data.user.id }, client['roomId']);
+          const leaveResponse = await this.roomService.leaveRoom({ id: client.data.user.id }, client['roomId']);
           const { ok: leaveOk, room } = leaveResponse;
           if (leaveOk) {
             this.server.to('rooms').emit('rooms:leave:client', room);

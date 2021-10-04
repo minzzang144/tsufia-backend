@@ -23,7 +23,7 @@ export class ChatsService {
       user: { id },
     } = requestWithUser;
     if (!id) return { ok: false, error: '접근 권한을 가지고 있지 않습니다' };
-    return { id };
+    return { id: +id };
   }
 
   /* Create Chat Service */
