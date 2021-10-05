@@ -351,7 +351,7 @@ export class RoomsService {
       const surviveUserList = room.userList.filter((user) => user.survive === true);
       let mafiaCount = 0;
       let citizenCount = 0;
-      if (maxVoteValue >= Math.ceil(surviveUserList.length / 2)) {
+      if (maxVoteValue >= Math.ceil((surviveUserList.length + 1) / 2)) {
         // 과반수를 넘으면 탈락
         room.userList = room.userList.map((listUser) => {
           if (listUser.id === Number(maxVoteKey)) {
