@@ -6,10 +6,11 @@ import { Game } from '@games/entities/game.entity';
 import { Room, Status } from '@rooms/entities/room.entity';
 import { User } from '@users/entities/user.entity';
 import { RoomsService } from '@rooms/rooms.service';
+import { GamesService } from '@games/games.service';
 
 @WebSocketGateway(undefined, { cors: { origin: 'http://localhost:3000', credentials: true } })
 export class GamesGateway {
-  constructor(private readonly roomsService: RoomsService) {}
+  constructor(private readonly roomsService: RoomsService, private readonly gamesService: GamesService) {}
   @WebSocketServer() server: Server;
 
   /* Create Game Event */
@@ -125,5 +126,11 @@ export class GamesGateway {
       this.server.to(`rooms/${roomId}`).emit('games:patch:vote:each-client', room);
       if (room.status === Status.종료) this.server.to(`rooms`).emit('games:patch:status:client', room);
     }
+  }
+
+  /* Patch Restart Game Event */
+  @SubscribeMessage('games:patch:restart:server')
+  async handleRestartGame(@MessageBody() room: Room, @ConnectedSocket() client: Socket) {
+    this.server.to(`rooms/${room.id}`).emit('games:patch:restart:each-client', room);
   }
 }
