@@ -91,7 +91,7 @@ export class GamesGateway {
   handlePatchSurviveBroadcast(@MessageBody() room: Room | undefined, @ConnectedSocket() client: Socket) {
     if (room) {
       this.server.to(`rooms/${room.id}`).emit('games:patch:survive:each-client', room);
-      if (room.status === Status.종료) this.server.to(`room`).emit('games:patch:status:client', room);
+      if (room.status === Status.종료) this.server.to(`rooms`).emit('games:patch:status:client', room);
     }
   }
 
@@ -132,5 +132,6 @@ export class GamesGateway {
   @SubscribeMessage('games:patch:restart:server')
   async handleRestartGame(@MessageBody() room: Room, @ConnectedSocket() client: Socket) {
     this.server.to(`rooms/${room.id}`).emit('games:patch:restart:each-client', room);
+    if (room.status === Status.진행중) this.server.to(`rooms`).emit('games:patch:restart:client', room);
   }
 }
