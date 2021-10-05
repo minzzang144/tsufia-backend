@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as moment from 'moment';
 import { Repository } from 'typeorm';
 
 import { instanceOfRequestWithUser, RequestWithUser, RequestWithUserOrId } from '@common/common.interface';
@@ -10,6 +11,7 @@ import { PatchRoomInputDto, PatchRoomOutputDto } from '@rooms/dtos/patch-room.dt
 import { PatchSurviveInputDto, PatchSurviveOutputDto } from '@rooms/dtos/patch-survive.dto';
 import { PatchVoteOutputDto } from '@rooms/dtos/patch-vote.dto';
 import { DeleteRoomOutputDto } from '@rooms/dtos/delete-room.dto';
+import { PatchRestartRoomOutputDto } from '@rooms/dtos/patch-restart-room.dto';
 import { Game } from '@games/entities/game.entity';
 import { Room, Status } from '@rooms/entities/room.entity';
 import { User, UserRole } from '@users/entities/user.entity';
@@ -378,6 +380,40 @@ export class RoomsService {
     } catch (error) {
       console.log(error);
       return { ok: false, error: '투표 결과를 확인할 수 없습니다' };
+    }
+  }
+
+  /* ReGame Service */
+  async patchRestartRoom(requestWithUser: RequestWithUser, roomId: string): Promise<PatchRestartRoomOutputDto> {
+    try {
+      const { ok, error } = this.authUser(requestWithUser);
+      if (ok === false && error) return { ok, error };
+
+      let room = await this.roomRepository.findOne({ id: +roomId }, { relations: ['userList', 'game'] });
+      if (!room) return { ok: false };
+
+      // 게임 삭제
+      if (room.currentHeadCount !== room.totalHeadCount) return { ok: false };
+      if (room.game) {
+        await this.gameRepository.remove(room.game);
+        room.game = null;
+      }
+
+      // 게임 재생성
+      const countDown = moment().add(10, 'seconds').unix();
+      const newGame = this.gameRepository.create({ countDown });
+      room.game = newGame;
+      room.status = Status.진행중;
+      room.userList = room.userList.map((listUser) => {
+        listUser.role = null;
+        listUser.survive = null;
+        return listUser;
+      });
+      room = await this.roomRepository.save(room);
+      return { ok: true, room };
+    } catch (error) {
+      console.log(error);
+      return { ok: false, error: '게임을 삭제할 수 없습니다' };
     }
   }
 }

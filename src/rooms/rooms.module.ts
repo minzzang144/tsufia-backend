@@ -12,6 +12,5 @@ import { User } from '@users/entities/user.entity';
   imports: [TypeOrmModule.forFeature([Room, User, Game])],
   controllers: [RoomsController, RoomsAPIController],
   providers: [RoomsGateway, RoomsService],
-  exports: [RoomsGateway],
 })
 export class RoomsModule {}

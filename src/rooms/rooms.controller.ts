@@ -97,4 +97,14 @@ export class RoomsAPIController {
   ): Promise<PatchSurviveOutputDto> {
     return this.roomsService.patchSurvive(requestWithUser, roomId, patchSurviveInputDto);
   }
+
+  /* Patch Restart Room API */
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/patch/restart')
+  async patchRestartRoomGame(
+    @Req() requestWithUser: RequestWithUser,
+    @Param('id') roomId: string,
+  ): Promise<PatchRoomOutputDto> {
+    return this.roomsService.patchRestartRoom(requestWithUser, roomId);
+  }
 }
