@@ -5,7 +5,6 @@ import * as moment from 'moment';
 
 import { RequestWithUser } from '@common/common.interface';
 import { CreateGameOutputDto } from '@games/dtos/create-game.dto';
-import { GetGameOutputDto } from '@games/dtos/get-game.dto';
 import { Cycle, Game } from '@games/entities/game.entity';
 import { Room } from '@rooms/entities/room.entity';
 import { User } from '@users/entities/user.entity';
@@ -48,28 +47,6 @@ export class GamesService {
     } catch (error) {
       console.log(error);
       return { ok: false, error: '게임을 생성할 수 없습니다' };
-    }
-  }
-
-  /* Get Game Servecie */
-  async getGame(requestWithUser: RequestWithUser, id: string): Promise<GetGameOutputDto> {
-    try {
-      const { ok, error } = this.authUser(requestWithUser);
-      if (ok === false && error) return { ok, error };
-
-      const game = await this.gameRepository.findOneOrFail(
-        { id: +id },
-        { select: ['id', 'roomId', 'cycle', 'countDown'] },
-      );
-      if (!game) return { ok: false, error: '게임을 찾을 수 없습니다' };
-
-      return { ok: true, game };
-    } catch (error) {
-      if (error.name === 'EntityNotFound') {
-        return { ok: false };
-      }
-      console.log(error);
-      return { ok: false, error: '게임을 불러올 수 없습니다' };
     }
   }
 
