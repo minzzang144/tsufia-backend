@@ -15,6 +15,7 @@ import { Chat } from '@chats/entities/chat.entity';
 import { GamesModule } from '@games/games.module';
 import { Game } from '@games/entities/game.entity';
 import { RoomsService } from '@rooms/rooms.service';
+import { MailModule } from '@mail/mail.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { RoomsService } from '@rooms/rooms.service';
     RoomsModule,
     ChatsModule,
     GamesModule,
+    MailModule,
   ],
   providers: [AppGateway, RoomsService],
 })

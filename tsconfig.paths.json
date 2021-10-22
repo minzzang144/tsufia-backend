@@ -6,6 +6,7 @@
       "@chats/*": ["src/chats/*"],
       "@common/*": ["src/common/*"],
       "@games/*": ["src/games/*"],
+      "@mail/*": ["src/mail/*"],
       "@rooms/*": ["src/rooms/*"],
       "@users/*": ["src/users/*"],
       "@/*": ["src/*"]
