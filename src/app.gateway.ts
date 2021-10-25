@@ -13,9 +13,10 @@ import {
 import { Server, Socket } from 'socket.io';
 
 import { RoomsService } from '@rooms/rooms.service';
-import cookieParser from 'cookie-parser';
 
-@WebSocketGateway(undefined, { cors: { origin: 'http:://localhost:3000', credentials: true } })
+const ORIGIN = process.env.NODE_ENV === 'production' ? 'https://tsufia.netlify.app' : 'http:://localhost:3000';
+
+@WebSocketGateway(undefined, { cors: { origin: ORIGIN, credentials: true } })
 export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   constructor(private readonly roomService: RoomsService) {}
 
