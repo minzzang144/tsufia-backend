@@ -34,6 +34,11 @@ import { MailModule } from '@mail/mail.module';
         JWT_REFRESH_TOKEN_SECRET_KEY: Joi.string().required(),
         JWT_ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().required(),
         JWT_REFRESH_TOKEN_EXPIRATION_TIME: Joi.string().required(),
+        VERIFYCATION_EXPIRATION_SECRET_KEY: Joi.string().required(),
+        VERIFYCATION_EXPIRATION_TIME: Joi.string().required(),
+        VERIFYCATION_EXPIRATION_DATE: Joi.string().required(),
+        MAIL_USER: Joi.string().required(),
+        MAIL_PASSWORD: Joi.string().required(),
       }),
     }),
     TypeOrmModule.forRoot({
