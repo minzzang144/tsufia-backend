@@ -14,7 +14,7 @@ import { Server, Socket } from 'socket.io';
 
 import { RoomsService } from '@rooms/rooms.service';
 
-const ORIGIN = process.env.NODE_ENV === 'production' ? 'https://tsufia.netlify.app' : 'http:://localhost:3000';
+const ORIGIN = process.env.NODE_ENV === 'production' ? 'https://tsufia.netlify.app' : 'http://localhost:3000';
 
 @WebSocketGateway(undefined, { cors: { origin: ORIGIN, credentials: true } })
 export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {

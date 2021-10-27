@@ -8,7 +8,7 @@ import { User } from '@users/entities/user.entity';
 import { RoomsService } from '@rooms/rooms.service';
 import { GamesService } from '@games/games.service';
 
-const ORIGIN = process.env.NODE_ENV === 'production' ? 'https://tsufia.netlify.app' : 'http:://localhost:3000';
+const ORIGIN = process.env.NODE_ENV === 'production' ? 'https://tsufia.netlify.app' : 'http://localhost:3000';
 
 @WebSocketGateway(undefined, { cors: { origin: ORIGIN, credentials: true } })
 export class GamesGateway {

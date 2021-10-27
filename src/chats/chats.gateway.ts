@@ -4,7 +4,7 @@ import { Server, Socket } from 'socket.io';
 
 import { Chat } from '@chats/entities/chat.entity';
 
-const ORIGIN = process.env.NODE_ENV === 'production' ? 'https://tsufia.netlify.app' : 'http:://localhost:3000';
+const ORIGIN = process.env.NODE_ENV === 'production' ? 'https://tsufia.netlify.app' : 'http://localhost:3000';
 
 @WebSocketGateway(undefined, { cors: { origin: ORIGIN, credentials: true } })
 export class ChatsGateway {
