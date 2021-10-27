@@ -63,8 +63,8 @@ export class AuthService {
       res.cookie('refreshToken', refreshToken, {
         expires: now,
         httpOnly: true,
-        secure: process.env.NODE_ENV !== 'development',
-        sameSite: true,
+        secure: process.env.NODE_ENV === 'production' ? true : false,
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       });
       return {
         ok: true,
@@ -126,8 +126,8 @@ export class AuthService {
       res.cookie('refreshToken', refreshToken, {
         expires: now,
         httpOnly: true,
-        secure: process.env.NODE_ENV !== 'development',
-        sameSite: true,
+        secure: process.env.NODE_ENV === 'production' ? true : false,
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       });
       return {
         ok: true,
@@ -171,8 +171,8 @@ export class AuthService {
       res.cookie('refreshToken', refreshToken, {
         expires: now,
         httpOnly: true,
-        secure: process.env.NODE_ENV !== 'development',
-        sameSite: true,
+        secure: process.env.NODE_ENV === 'production' ? true : false,
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       });
       return {
         ok: true,
@@ -212,8 +212,8 @@ export class AuthService {
       res.cookie('refreshToken', refreshToken, {
         expires: now,
         httpOnly: true,
-        secure: process.env.NODE_ENV !== 'development',
-        sameSite: true,
+        secure: process.env.NODE_ENV === 'production' ? true : false,
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       });
       return {
         ok: true,
