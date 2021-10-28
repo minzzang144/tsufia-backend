@@ -6,6 +6,7 @@ import { AppModule } from '@/app.module';
 
 const ORIGIN = process.env.NODE_ENV === 'production' ? 'https://tsufia.netlify.app' : 'http://localhost:3000';
 
+// Nest Application
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe());
