@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as moment from 'moment';
-import 'moment-timezone';
 
 import { RequestWithUser } from '@common/common.interface';
 import { CreateGameOutputDto } from '@games/dtos/create-game.dto';
@@ -39,7 +37,8 @@ export class GamesService {
 
       const room = await this.roomRepository.findOneOrFail({ id: user.roomId });
 
-      const countDown = moment().add(10, 'seconds').unix();
+      const date = new Date();
+      const countDown = date.setSeconds(date.getSeconds() + 10);
       const newGame = this.gameRepository.create({ countDown });
       newGame.room = room;
       const game = await this.gameRepository.save(newGame);
@@ -64,27 +63,29 @@ export class GamesService {
       if (!game) return { ok: false, error: '게임을 찾을 수 없습니다' };
 
       let countDown: number;
+      const date = new Date();
+
       switch (game.cycle) {
         case null:
-          countDown = moment().tz('Asia/Seoul').add(15, 'seconds').unix();
+          countDown = date.setSeconds(date.getSeconds() + 15);
           game.countDown = countDown;
           game.cycle = Cycle.밤;
           game = await this.gameRepository.save(game);
           return { ok: true, game };
         case Cycle.밤:
-          countDown = moment().tz('Asia/Seoul').add(30, 'seconds').unix();
+          countDown = date.setSeconds(date.getSeconds() + 30);
           game.countDown = countDown;
           game.cycle = Cycle.낮;
           game = await this.gameRepository.save(game);
           return { ok: true, game };
         case Cycle.낮:
-          countDown = moment().tz('Asia/Seoul').add(15, 'seconds').unix();
+          countDown = date.setSeconds(date.getSeconds() + 15);
           game.countDown = countDown;
           game.cycle = Cycle.저녁;
           game = await this.gameRepository.save(game);
           return { ok: true, game };
         case Cycle.저녁:
-          countDown = moment().tz('Asia/Seoul').add(15, 'seconds').unix();
+          countDown = date.setSeconds(date.getSeconds() + 15);
           game.countDown = countDown;
           game.cycle = Cycle.밤;
           game = await this.gameRepository.save(game);

@@ -16,7 +16,7 @@ export class Game extends Core {
   @IsOptional()
   public cycle?: Cycle;
 
-  @Column()
+  @Column({ type: 'bigint' })
   @IsNumber()
   @IsOptional()
   public countDown?: number;

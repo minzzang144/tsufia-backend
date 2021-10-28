@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as moment from 'moment';
 import { Repository } from 'typeorm';
 
 import { instanceOfRequestWithUser, RequestWithUser, RequestWithUserOrId } from '@common/common.interface';
@@ -400,7 +399,8 @@ export class RoomsService {
       }
 
       // 게임 재생성
-      const countDown = moment().add(10, 'seconds').unix();
+      const date = new Date();
+      const countDown = date.setSeconds(date.getSeconds() + 10);
       const newGame = this.gameRepository.create({ countDown });
       room.game = newGame;
       room.status = Status.진행중;
