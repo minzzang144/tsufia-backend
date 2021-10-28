@@ -83,7 +83,9 @@ export class AuthService {
       } = requestWithUser;
       if (!id) return { ok: false, error: '접근 권한을 가지고 있지 않습니다' };
 
+      console.log(requestWithUser.cookies);
       res.clearCookie('refreshToken');
+      console.log(requestWithUser.cookies);
       return { ok: true };
     } catch (error) {
       console.log(error);
