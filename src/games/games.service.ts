@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as moment from 'moment';
+import 'moment-timezone';
 
 import { RequestWithUser } from '@common/common.interface';
 import { CreateGameOutputDto } from '@games/dtos/create-game.dto';
@@ -65,25 +66,25 @@ export class GamesService {
       let countDown: number;
       switch (game.cycle) {
         case null:
-          countDown = moment().add(15, 'seconds').unix();
+          countDown = moment().tz('Asia/Seoul').add(15, 'seconds').unix();
           game.countDown = countDown;
           game.cycle = Cycle.밤;
           game = await this.gameRepository.save(game);
           return { ok: true, game };
         case Cycle.밤:
-          countDown = moment().add(30, 'seconds').unix();
+          countDown = moment().tz('Asia/Seoul').add(30, 'seconds').unix();
           game.countDown = countDown;
           game.cycle = Cycle.낮;
           game = await this.gameRepository.save(game);
           return { ok: true, game };
         case Cycle.낮:
-          countDown = moment().add(15, 'seconds').unix();
+          countDown = moment().tz('Asia/Seoul').add(15, 'seconds').unix();
           game.countDown = countDown;
           game.cycle = Cycle.저녁;
           game = await this.gameRepository.save(game);
           return { ok: true, game };
         case Cycle.저녁:
-          countDown = moment().add(15, 'seconds').unix();
+          countDown = moment().tz('Asia/Seoul').add(15, 'seconds').unix();
           game.countDown = countDown;
           game.cycle = Cycle.밤;
           game = await this.gameRepository.save(game);
