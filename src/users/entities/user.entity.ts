@@ -54,6 +54,12 @@ export class User extends Core {
   @Column({ type: 'enum', enum: Provider, default: Provider.Local })
   public provider: Provider;
 
+  @Exclude({ toPlainOnly: true })
+  @Column({ nullable: true })
+  @IsOptional()
+  @IsString()
+  public refreshToken?: string;
+
   // onDelete: 'SET NULL' -> 부모 Entity(Room)이 삭제될 경우 room값을 null로 설정한다.
   @ManyToOne(() => Room, (room) => room.userList, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'roomId' })
