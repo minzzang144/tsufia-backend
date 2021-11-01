@@ -57,6 +57,11 @@ export class AuthService {
         audience: String(id),
       });
 
+      /* refreshToken 필드 업데이트 */
+      const loginUser = await this.userRepository.findOneOrFail(id);
+      loginUser.refreshToken = refreshToken;
+      await this.userRepository.save(loginUser);
+
       // 쿠키 설정
       const now = new Date();
       now.setDate(now.getDate() + +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_DATE'));
@@ -83,9 +88,10 @@ export class AuthService {
       } = requestWithUser;
       if (!id) return { ok: false, error: '접근 권한을 가지고 있지 않습니다' };
 
-      console.log(requestWithUser.cookies);
+      const loginUser = await this.userRepository.findOneOrFail(id);
+      loginUser.refreshToken = null;
+      await this.userRepository.save(loginUser);
       res.clearCookie('refreshToken');
-      console.log(requestWithUser.cookies);
       return { ok: true };
     } catch (error) {
       console.log(error);
@@ -112,6 +118,12 @@ export class AuthService {
         },
       );
 
+      // 로그아웃 후에는 Silent Refresh를 무시
+      const loginUser = await this.userRepository.findOneOrFail(+userId);
+      if (loginUser.refreshToken !== getRefreshToken) {
+        return { ok: false };
+      }
+
       // refreshToken & accessToken 재발급
       const payload = { id: userId };
       const accessToken = jwt.sign(payload, this.configService.get('JWT_ACCESS_TOKEN_SECRET_KEY'), {
@@ -121,6 +133,10 @@ export class AuthService {
         expiresIn: this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
         audience: String(userId),
       });
+
+      /* refreshToken 필드 업데이트 */
+      loginUser.refreshToken = refreshToken;
+      await this.userRepository.save(loginUser);
 
       // 쿠키 설정
       const now = new Date();
@@ -136,6 +152,7 @@ export class AuthService {
         accessToken,
       };
     } catch (error) {
+      console.log(error);
       return { ok: false, error: '로그인 연장에 실패하였습니다.' };
     }
   }
@@ -166,6 +183,10 @@ export class AuthService {
         expiresIn: this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
         audience: String(findUser.id),
       });
+
+      /* refreshToken 필드 업데이트 */
+      findUser.refreshToken = refreshToken;
+      await this.userRepository.save(findUser);
 
       // 쿠키 설정
       const now = new Date();
@@ -207,6 +228,10 @@ export class AuthService {
         expiresIn: this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
         audience: String(findUser.id),
       });
+
+      /* refreshToken 필드 업데이트 */
+      findUser.refreshToken = refreshToken;
+      await this.userRepository.save(findUser);
 
       // 쿠키 설정
       const now = new Date();
