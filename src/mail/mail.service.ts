@@ -11,13 +11,16 @@ export class MailService {
       const { email, subject, message } = postUserContactInputDto;
       await this.mailerService.sendMail({
         to: email,
-        subject,
+        subject: `Tsufia`,
         html: `<p>메일이 성공적으로 전송되었습니다. 빠른 시일 내로 답장 드리겠습니다.</p>`,
       });
       await this.mailerService.sendMail({
+        from: `@tsufia.netlify.app from <shigatsu970704@gmail.com>`,
         to: 'shigatsu970704@gmail.com',
         subject,
-        html: `<p>${message}</p>`,
+        html: `
+        <h1>${email}</h1>
+        <p>${message}</p>`,
       });
       return { ok: true };
     } catch (error) {

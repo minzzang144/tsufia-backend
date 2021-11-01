@@ -12,7 +12,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       useFactory: async (configService: ConfigService) => ({
         transport: {
           service: 'gmail',
-          port: 4000,
           secure: false,
           auth: {
             user: configService.get('MAIL_USER'),
