@@ -86,3 +86,23 @@ access token을 쿠키에 저장했을 때 생기는 문제점이 있습니다. 
 7. [프론트엔드] SilentRefresh 결과 반환된 RefreshToken을 쿠키 저장소에, 그리고 AccessToken과 만료기간을 헤더에 저장하여 다음 api호출에 사용한다.
 
 RefreshToken은 보호된 리소스에 접근하기 위한 토큰은 아니다. 진짜 보호해야할 정보는 AccessToken 속에 들어있고 AccessToken을 탈취될 것을 방지하기 위해 쿠키 저장소에 RefreshToken을 대신 저장하여 그로부터 검증받은 AccessToken 만이 제어할 수 있습니다.(통상적으로 RefreshToken이 AccessToken 보다 만료기간이 길다) 즉, RefreshToken을 사용한 의미는 AccessToken을 한 단계 감싸주는 역할을 한다고 볼 수 있습니다.
+
+### 세 단계 더 생각해본 로그인 구현방식
+
+#### RefreshToken을 사용한 이유
+
+만약 access token의 만료 기간을 길게 잡아 이것만 사용하게 한다면 access token이 탈취 되었을 때 서버에서 아무런 방어적인 행동을 할 수 없습니다. 그래서 클라이언트 측에 2개의 토큰을 주게 됩니다. access token을 서버에게 전송해 인가 작업이 이루어지고, refresh token은 access token을 발급할 때만 서버에 전송합니다. 만약 refresh token이 탈취되어 해커가 새로운 access token을 요구해 발급받을 수 있습니다만 refresh token을 서버에서 지워버려 access token을 발급하지 못하게 할 수도 있습니다.
+
+추가 구현 방식
+
+1. [프론트엔드] ID와 비밀번호를 준다.
+
+2. [백엔드] ID와 비밀번호를 검증하고 AccessToken과 RefreshToken을 반환해준다. RefreshToken은 쿠키로 발급, AccessToken은 변수로 발급하고 RefreshToken은 데이터베이스에 저장합니다.
+
+3. [프론트엔드] SilentRefresh 요청을 한다.
+
+4. [백엔드] SilentRefresh 요청을 받으면 RefreshToken이 DB 내의 RefreshToken과 같은 값인지 비교하여 맞다면 맞다면 RefreshToken과 새로운 AccessToken 만료 시간을 반환한다.
+
+5. [프론트엔드] 공격자가 RefreshToken을 탈취하여 서버에 AccessToken을 요청한다.
+
+6. [백엔드] RefreshToken이 비이상적으로 요청된 경우, 서버에서 데이터베이스 내의 RefreshToken을 삭제해 더이상 AccessToken을 발급하지 못하도록 막는다.
