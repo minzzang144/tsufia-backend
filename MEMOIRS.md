@@ -106,3 +106,25 @@ RefreshToken은 보호된 리소스에 접근하기 위한 토큰은 아니다. 
 5. [프론트엔드] 공격자가 RefreshToken을 탈취하여 서버에 AccessToken을 요청한다.
 
 6. [백엔드] RefreshToken이 비이상적으로 요청된 경우, 서버에서 데이터베이스 내의 RefreshToken을 삭제해 더이상 AccessToken을 발급하지 못하도록 막는다.
+
+#### 실수한 부분
+
+SlientRefresh를 구현할 때 새로고침이 발생할 때마다 요청하도록 구현했었는데 이렇게 하게되면 RefreshToken이 만료되기 전에 웹사이트를 방문하기만 한다면 무한 로그인을 할수도 있을 것 같다. 굉장히 편할 것 같다고 생각해서 만들어봤는데 다른 사람들이 만든 방법을 찾아보니 보안적인 면에서 좋지 않은 것 같다고 생각이 든다. 적어도 RefreshToken이 만료되면 로그인을 다시 하도록 유도하는 것이 좋은 방법인 것 같다.
+
+정상적인 구현 방식
+
+1. [프론트엔드] ID와 비밀번호를 준다.
+
+2. [백엔드] ID와 비밀번호를 검증하고 AccessToken과 RefreshToken, AccessToken의 만료시간을 반환해준다. 이 때 생성한 RefreshToken은 DB에 {ID,RefreshToken}으로 저장한다.
+
+3. [프론트엔드] 반환받은 AccessToken을 매 api 호출마다 헤더에 붙여서 전송한다.
+
+4. [백엔드] api호출시 헤더의 AccessToken을 확인하고 유효한지, 만료기간이 지났는지를 체크 후 api를 동작시킨다.
+
+5. [프론트엔드] AccessToken의 만료 기간이 지나거나, 30초 미만으로 남았다면, 백엔드에 RefreshToken을 붙여 SilentRefresh 요청을 보낸다.
+
+6. [백엔드] SilentRefresh 요청이 들어올 경우, RefreshToken이 DB에 있는 것인지 확인한 후, 맞다면 AccessToken과 새로운 AccessToken 만료 시간을 반환한다.
+
+7. [프론트엔드] SilentRefresh 결과 반환된 AccessToken과 만료기간을 저장하여 다음 api호출에 사용한다.
+
+AccessToken이 만료될 즈음에 SilentRefresh를 요청하는 것이다. 이렇게 하면 적어도 RefreshToken의 기간이 만료될 때 적어도 다시한번 로그인 하게 만들 수 있을 것 같다.
