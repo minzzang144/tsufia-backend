@@ -62,3 +62,27 @@ XSS 공격은 사용자가 특정 웹사이트를 신뢰한다는 점을 노린 
 CSRF 공격은 특정 웹사이트가 사용자를 신뢰한다는 점을 노린 것이다. XSS 공격으로 탈취된 사용자의 민감한 정보를 이용해 자신이 웹사이트로부터 인증 받은 사용자인 것처럼 위장해 사용자의 의도와 무관하게 공격자의 의도대로 요청하는 공격을 말한다.
 
 로그인 후 서버로부터 브라우저 쿠키 속에 access token을 부여받게 된다면 사용자가 다시 접속했을 때 쿠키 속의 access token을 서버로 전송해 사용자임을 인증 받을 수 있으므로 재 로그인 없이도 계속 인가받을 수 있다.(이것을 silent refresh라고 한다)
+
+### 두 단계 더 생각해본 로그인 구현방식
+
+access token을 쿠키에 저장했을 때 생기는 문제점이 있습니다. 쿠키 저장소가 XSS 공격을 막아줄 수 있지만 완벽하지는 않기 때문입니다. 만약에 access token이 탈취되었다고 가정했을 때 공격자가 악성 행위를 가하게 되면 서버 측에서 취할 수 있는 방어방법은 존재하지 않습니다. JWT 토큰은 한번 발급 되면 만료기간이 지날 때까지 유효하기 때문에 탈취 되버리면 그저 공격자가 무엇을 하든지 간에 지켜볼 수 밖에 없는 것 입니다.
+
+그래서 access token이 탈취되는 것을 방지하기 위해 refresh token을 같이 사용하게 됩니다. refresh token이란 accessToken의 수명이 다했을 때 accessToken을 재발행 받기 위한 토큰입니다.
+
+구현 방식
+
+1. [프론트엔드] ID와 비밀번호를 준다.
+
+2. [백엔드] ID와 비밀번호를 검증하고 AccessToken과 RefreshToken을 반환해준다. RefreshToken은 쿠키로 발급, AccessToken은 변수로 발급된다.
+
+3. [프론트엔드] 반환받은 AccessToken을 매 api 호출마다 헤더에 붙여서 전송한다.
+
+4. [백엔드] api호출시 헤더의 AccessToken을 확인하고 유효한지, 만료기간이 지났는지를 체크 후 api를 동작시킨다.
+
+5. [프론트엔드] 브라우저에 접속하거나 페이지가 새로고침 될 때마다 백엔드에 RefreshToken을 붙여 SilentRefresh 요청을 보낸다.
+
+6. [백엔드] SilentRefresh 요청이 들어올 경우, 쿠키 저장소의 RefreshToken을 검증한 후, 맞다면 RefreshToken과 새로운 AccessToken 만료 시간을 반환한다.
+
+7. [프론트엔드] SilentRefresh 결과 반환된 RefreshToken을 쿠키 저장소에, 그리고 AccessToken과 만료기간을 헤더에 저장하여 다음 api호출에 사용한다.
+
+RefreshToken은 보호된 리소스에 접근하기 위한 토큰은 아니다. 진짜 보호해야할 정보는 AccessToken 속에 들어있고 AccessToken을 탈취될 것을 방지하기 위해 쿠키 저장소에 RefreshToken을 대신 저장하여 그로부터 검증받은 AccessToken 만이 제어할 수 있습니다.(통상적으로 RefreshToken이 AccessToken 보다 만료기간이 길다) 즉, RefreshToken을 사용한 의미는 AccessToken을 한 단계 감싸주는 역할을 한다고 볼 수 있습니다.
